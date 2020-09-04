@@ -7,10 +7,13 @@
 import unittest
 
 from src.db.sqlite import Sqlite3Record
+import sqlite3
+
+from src.config import setting_get
 
 
 class DbTest(unittest.TestCase):
 
     def test_db(self):
-        a = Sqlite3Record.load().ex("luowen")
+        a = Sqlite3Record.load().exists("luowen")
         print(a)
