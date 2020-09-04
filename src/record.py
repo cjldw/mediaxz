@@ -25,7 +25,7 @@ class Recoder(object):
         record_locker.release()
 
     @staticmethod
-    def load(self) -> Recoder:
+    def acquire(self) -> Recoder:
         record_locker.acquire()
         if self.__recorder is None:
             self.__recorder = Recoder()

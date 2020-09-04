@@ -29,7 +29,7 @@ class Sqlite3Record(object):
         sqlite_locker.release()
 
     @staticmethod
-    def load(db: str = None) -> Sqlite3Record:
+    def acquire(db: str = None) -> Sqlite3Record:
         sqlite_locker.acquire()
         if Sqlite3Record.__instance is not None:
             sqlite_locker.release()
@@ -63,6 +63,7 @@ class Sqlite3Record(object):
         cursor.execute(sql, (code, data.get("url", "")))
         if cursor.rowcount <= 0:
             logger.error("sql: {} data: {} not success".format(sql, data))
+            cursor.close()
             return False
         cursor.close()
         return True

@@ -15,5 +15,5 @@ from src.config import setting_get
 class DbTest(unittest.TestCase):
 
     def test_db(self):
-        a = Sqlite3Record.load().exists("luowen")
+        a = Sqlite3Record.acquire().exists("luowen")
         print(a)

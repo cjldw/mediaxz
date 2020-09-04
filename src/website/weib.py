@@ -18,7 +18,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 logger = logging.getLogger(__name__)
 
 
-class WeiB(object, Browser):
+class WeiB(Browser):
     name: str = "weibo"
 
     url: str = "https://weibo.com"
@@ -52,4 +52,4 @@ class WeiB(object, Browser):
             logger.error("element not found timeout: {}".format(e.args[-1]))
             return False
         finally:
-            self.tab_close()
+            self.tab_close(self.url)
