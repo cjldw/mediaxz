@@ -7,14 +7,17 @@
 import click
 
 from src.website.weib import WeiB
+from src.logs import config_logging
 
 
 @click.command()
 @click.option('--website', type=click.Choice(["weibo", "douyu"], case_sensitive=False), default="weibo",
               help="which website to crawl")
+@click.option("--count", default=10, help="number of video crawl")
 def main(website: str, **kwargs):
+    config_logging()
     if website == WeiB.name:
-        weibo = WeiB()
+        weibo = WeiB(**kwargs)
         return weibo.crawl()
     raise ValueError("website {} not implemented".format(website))
 

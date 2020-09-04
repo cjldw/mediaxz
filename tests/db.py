@@ -9,11 +9,19 @@ import unittest
 from src.db.sqlite import Sqlite3Record
 import sqlite3
 
+from src.models.video import Video
+
+from pathlib import Path
+import pathlib
+
 from src.config import setting_get
 
 
 class DbTest(unittest.TestCase):
 
     def test_db(self):
-        a = Sqlite3Record.acquire().exists("luowen")
+        video = Video(title="luowen", img_src="https://img2.zhanqi.com/aa.jgp", src="xxxxxxxxxxxxx")
+        a = Sqlite3Record.acquire().record_videos(video)
         print(a)
+
+        p = Path("luowen.txt")
