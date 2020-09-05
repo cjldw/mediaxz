@@ -33,20 +33,11 @@ class Download(Thread):
     def run(self) -> None:
         while True:
             video: Video = self.queue.get()
-            logger.info("{} handler {}".format(self.getName(), video))
-            # video_hash = hashlib.md5(video.src.encode("utf-8")).hexdigest()
-            # if Sqlite3Record.acquire().exists(video_hash):
-            #     self.queue.task_done()
-            #     logger.info("item: {} code:{} is record, don't need download again".format(video, video_hash))
-            #     return None
+            logger.info("{} handler {}".format(self.getName(), video.title))
             try:
                 self.download_img(video)
                 download_success = self.download_video(video)
-                # if download_success:
-                # if not Sqlite3Record.acquire().record_videos(video):
-                #     logger.error("record video: {} failure".format(video))
-                #     return None
-                logger.info("record video: {} success".format(video))
+                logger.info("download video: {} status: {}".format(video.title, download_success))
             except Exception as e:
                 logger.error("download video failre, err:{}".format(e.args))
             finally:
@@ -54,21 +45,24 @@ class Download(Thread):
 
     def download_img(self, video: Video) -> bool:
         download_img_resp = requests.get(video.img_src, stream=True)
-        if download_img_resp.status_code == 200:
-            filename: str = hashlib.md5(video.img_src.encode("utf-8")).hexdigest() + ".jpg"
-            abs_file = Path(self.download_dir).joinpath(filename)
-            logger.info("download image file: {}".format(abs_file))
-            with open(abs_file, "wb") as out_file:
-                shutil.copyfileobj(download_img_resp.raw, out_file)
-            del download_img_resp
-            return True
-        logger.error("item: {} images download failure, result: {}", video, download_img_resp.text)
-        return False
+        if download_img_resp.status_code != 200:
+            logger.error("item: {} images download failure, result: {}", video, download_img_resp.text)
+            return False
+        filename: str = hashlib.md5(video.img_src.encode("utf-8")).hexdigest() + ".jpg"
+        download_dir = Path(self.download_dir)
+        if not download_dir.exists():
+            download_dir.mkdir(mode=644, parents=True)
+        abs_file = download_dir.joinpath(filename)
+        logger.info("download image file: {}".format(abs_file))
+        with open(abs_file, "wb") as out_file:
+            shutil.copyfileobj(download_img_resp.raw, out_file)
+        del download_img_resp
+        return True
 
     def download_video(self, video: Video) -> bool:
         download_video_resp = requests.get(video.src, stream=True)
         if download_video_resp.status_code != 200:
-            logger.error("download video: {} failre, err: {}".format(video, download_video_resp.text))
+            logger.error("download video: {} failre, err: {}".format(video.src, download_video_resp.text))
             self.queue.task_done()
             return False
 

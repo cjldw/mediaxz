@@ -2,3 +2,5 @@
 venv
 pychache
 *.log
+output/
+__pycache__/

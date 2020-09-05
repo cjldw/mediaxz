@@ -7,11 +7,13 @@ from __future__ import annotations
 import logging
 
 import threading
+import hashlib
 from src.dl.download import Download
 from queue import Queue
 from src.config import setting_get
 from typing import List
 from src.models.video import Video
+from src.db.sqlite import Sqlite3Record
 
 record_locker = threading.RLock()
 logger = logging.getLogger(__name__)
@@ -50,8 +52,15 @@ class Recoder(object):
         record_locker.release()
         return Recoder.__recorder
 
-    def dispatch_video(self, item: Video):
+    def dispatch_video(self, item: Video) -> None:
+        video_hash: str = hashlib.md5(item.src.encode("utf-8")).hexdigest()
+        if Sqlite3Record.acquire().exists(video_hash):
+            logger.info("video_hash: {} item: {} is record in sqlite db".format(video_hash, item))
+            return None
         logger.info("record dispatch data: {}".format(item))
+        if not Sqlite3Record.acquire().record_videos(item):
+            logger.error("video: {} record to sqlite db failure".format(item))
+            return None
         return self.__recorder.queue_channel.put(item)
 
     def dispose(self):

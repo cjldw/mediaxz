@@ -78,8 +78,7 @@ class WeiB(Browser):
         for video_element in items:
             try:
                 video_title_element: WebElement = video_element.find_element_by_css_selector("h3.list_title_s")
-                video_img_src_element: WebElement = video_element. \
-                    find_element_by_xpath("//div[@node-type='fl_h5_video_pre']/img")
+                video_img_src_element: WebElement = video_element.find_element_by_css_selector(".vid.W_piccut_v img")
 
                 video_play_element = video_element.find_element_by_css_selector(".vid.W_piccut_v")
                 ActionChains(self.browser).move_to_element(video_play_element).click().perform()
@@ -98,7 +97,7 @@ class WeiB(Browser):
                 ))
                 item = Video(title=video_title, img_src=video_img_src, src=video_src)
                 Recoder.acquire().dispatch_video(item)
-                logger.info("dispatch: {} to download task job".format(item))
+                logger.info("dispatch: {} to download task job".format(item.src))
 
             except NoSuchElementException as e:
                 logger.error("video element not found play element: {}".format(e.args[-1]))

@@ -66,11 +66,11 @@ class Sqlite3Record(object):
             sqlite_locker.release()
             logger.info("code:{} is record before".format(code))
             return False
-        sql = "insert into videos (code, url, img) values (?, ?, ?)"
+        sql = "insert into videos (title, code, url, img) values (?, ?, ?, ?)"
         img: str = hashlib.md5(data.img_src.encode("utf-8")).hexdigest() + ".jpg"
-        cursor.execute(sql, (code, data.src, img))
+        cursor.execute(sql, (data.title, code, data.src, img))
+        self.__db.commit()
         affect_row = cursor.rowcount
-        cursor.close()
         sqlite_locker.release()
         if affect_row <= 0:
             logger.error("sql: {} data: {} not success".format(sql, data))
