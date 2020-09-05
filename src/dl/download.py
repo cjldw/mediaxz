@@ -48,7 +48,7 @@ class Download(Thread):
         if download_img_resp.status_code != 200:
             logger.error("item: {} images download failure, result: {}", video, download_img_resp.text)
             return False
-        filename: str = hashlib.md5(video.img_src.encode("utf-8")).hexdigest() + ".jpg"
+        filename: str = hashlib.md5(video.src.encode("utf-8")).hexdigest() + ".jpg"
         download_dir = Path(self.download_dir)
         if not download_dir.exists():
             download_dir.mkdir(mode=644, parents=True)
