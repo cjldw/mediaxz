@@ -17,3 +17,4 @@ class Video(object):
         self.title = title
         self.img_src = img_src
         self.src = src
+

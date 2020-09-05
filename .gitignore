@@ -4,3 +4,5 @@ pychache
 *.log
 output/
 __pycache__/
+
+build/

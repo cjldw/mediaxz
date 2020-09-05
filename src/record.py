@@ -6,6 +6,7 @@
 from __future__ import annotations
 import logging
 
+import json
 import threading
 import hashlib
 from src.dl.download import Download
@@ -14,6 +15,7 @@ from src.config import setting_get
 from typing import List
 from src.models.video import Video
 from src.db.sqlite import Sqlite3Record
+from pathlib import Path
 
 record_locker = threading.RLock()
 logger = logging.getLogger(__name__)
@@ -23,6 +25,8 @@ class Recoder(object):
     __recorder = None
 
     queue_channel: Queue = None
+
+    videos_list: List[Video] = None
 
     def __init__(self):
         record_locker.acquire()
@@ -40,6 +44,7 @@ class Recoder(object):
             Recoder.__recorder = Recoder()
             Recoder.queue_channel = queue
             Recoder.__recorder.threads: List[Download] = []
+            Recoder.__recorder.videos_list: List[Video] = []
             # initialize download thread
             thread_num = setting_get("download_thread_num")
             for index in range(0, thread_num):
@@ -61,7 +66,17 @@ class Recoder(object):
         if not Sqlite3Record.acquire().record_videos(item):
             logger.error("video: {} record to sqlite db failure".format(item))
             return None
+        self.__recorder.videos_list.append({"title": item.title, "img": item.img_src, "url": item.src})
         return self.__recorder.queue_channel.put(item)
+
+    def export_json(self):
+        download_dir = Path(setting_get("download_output"))
+        if not download_dir.exists():
+            download_dir.mkdir(mode=644, parents=True)
+        abs_file = download_dir.joinpath("videos.json")
+        with open(abs_file, mode="w", encoding="utf-8") as fd:
+            json.dump(self.__recorder.videos_list, fd, indent="  ", ensure_ascii=False)
+        logger.info("export all video to videos.json")
 
     def dispose(self):
         self.queue_channel.join()

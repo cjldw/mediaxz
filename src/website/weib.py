@@ -57,6 +57,7 @@ class WeiB(Browser):
             return False
         finally:
             self.tab_close(self.url)
+            Recoder.acquire().export_json()
             Recoder.acquire().dispose()
 
     def query_video_element(self, cursor: int) -> bool:
