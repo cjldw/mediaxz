@@ -6,7 +6,8 @@
 from __future__ import annotations
 import logging
 
-import json
+import shutil
+from json import load, dump, JSONDecodeError
 import threading
 import hashlib
 from src.dl.download import Download
@@ -16,6 +17,8 @@ from typing import List
 from src.models.video import Video
 from src.db.sqlite import Sqlite3Record
 from pathlib import Path
+from src.util import pure_url
+from datetime import datetime
 
 record_locker = threading.RLock()
 logger = logging.getLogger(__name__)
@@ -25,8 +28,6 @@ class Recoder(object):
     __recorder = None
 
     queue_channel: Queue = None
-
-    videos_list: List[Video] = None
 
     def __init__(self):
         record_locker.acquire()
@@ -44,7 +45,6 @@ class Recoder(object):
             Recoder.__recorder = Recoder()
             Recoder.queue_channel = queue
             Recoder.__recorder.threads: List[Download] = []
-            Recoder.__recorder.videos_list: List[Video] = []
             # initialize download thread
             thread_num = setting_get("download_thread_num")
             for index in range(0, thread_num):
@@ -58,7 +58,7 @@ class Recoder(object):
         return Recoder.__recorder
 
     def dispatch_video(self, item: Video) -> None:
-        video_hash: str = hashlib.md5(item.src.encode("utf-8")).hexdigest()
+        video_hash: str = hashlib.md5(pure_url(item.src).encode("utf-8")).hexdigest()
         if Sqlite3Record.acquire().exists(video_hash):
             logger.info("video_hash: {} item: {} is record in sqlite db".format(video_hash, item))
             return None
@@ -66,24 +66,44 @@ class Recoder(object):
         if not Sqlite3Record.acquire().record_videos(item):
             logger.error("video: {} record to sqlite db failure".format(item))
             return None
-        hash_code = hashlib.md5(item.src.encode("utf-8")).hexdigest()
-        self.__recorder.videos_list.append({
-            "title": item.title,
-            "img": item.img_src,
-            "url": item.src,
-            "img_hash": hash_code + ".jpg",
-            "video_hash": hash_code + ".mp4"
-        })
         return self.__recorder.queue_channel.put(item)
+
+    def load_dump(self) -> int:
+        download_dir = Path(setting_get("download_output"))
+        dumpfile = download_dir.joinpath("__index.json")
+        if not download_dir.exists() or not dumpfile.exists():
+            return 0
+        with open(dumpfile, "r", encoding="utf-8") as fd:
+            try:
+                result: dict = load(fd)
+                return result.get("cursor", 0)
+            except JSONDecodeError as e:
+                logger.error("json decode failure, err: {}".format(e.args))
+            return 0
+
+    def reset_dump(self, current_cursor: int) -> bool:
+        download_dir = Path(setting_get("download_output"))
+        if not download_dir.exists():
+            download_dir.mkdir(mode=644, parents=True)
+        dumpfile = download_dir.joinpath("__index.json")
+        with open(dumpfile, mode="w", encoding="utf-8") as fd:
+            dump({"cursor": current_cursor, "created_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}, fd,
+                 ensure_ascii=False)
+        return True
 
     def export_json(self):
         download_dir = Path(setting_get("download_output"))
         if not download_dir.exists():
             download_dir.mkdir(mode=644, parents=True)
         abs_file = download_dir.joinpath("videos.json")
+        if abs_file.exists():
+            shutil.move(abs_file, download_dir.joinpath(
+                "videos.json-{}".format(datetime.now().strftime("%Y%m%d%H%M%S"))))
+        result = Sqlite3Record.acquire().delta_videos(self.load_dump())
         with open(abs_file, mode="w", encoding="utf-8") as fd:
-            json.dump(self.__recorder.videos_list, fd, indent="  ", ensure_ascii=False)
+            dump(result, fd, indent="  ", ensure_ascii=False)
         logger.info("export all video to videos.json")
+        self.reset_dump(Sqlite3Record.acquire().current_videos_cursor())
 
     def dispose(self):
         self.queue_channel.join()

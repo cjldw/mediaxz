@@ -18,7 +18,6 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from src.models.video import Video
 from src.record import Recoder
-from src import util
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +97,7 @@ class WeiB(Browser):
                     video_img_src,
                     video_src
                 ))
-                item = Video(title=video_title, img_src=util.pure_url(video_img_src), src=util.pure_url(video_src))
+                item = Video(title=video_title, img_src=video_img_src, src=video_src)
                 Recoder.acquire().dispatch_video(item)
                 logger.info("dispatch: {} to download task job".format(item.src))
 

@@ -8,6 +8,7 @@ import click
 import logging
 from src.website.weib import WeiB
 from src.logs import config_logging
+from src.pub.bilib import BiliB
 
 logger = logging.getLogger(__name__)
 
@@ -20,14 +21,18 @@ logger = logging.getLogger(__name__)
 @click.option("--count", default=30, help="number of video crawl")
 def main(website: str, **kwargs):
     config_logging()
+
+    bili = BiliB()
+    bili.pub()
+    return
+
     if website == WeiB.name:
         weibo = WeiB(**kwargs)
         if not weibo.crawl():
             logger.error("crawl https://webo.cn failure")
             return False
-
-
-    raise ValueError("website {} not implemented".format(website))
+        return True
+    logger.error("application crawl not implement yet.")
 
 
 if __name__ == '__main__':

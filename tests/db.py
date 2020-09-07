@@ -25,12 +25,18 @@ logger = logging.getLogger(__name__)
 
 class DbTest(unittest.TestCase):
 
-    def test_db(self):
+    def test_record_videos(self):
         video = Video(title="luowen", img_src="https://img2.zhanqi.com/aa.jgp", src="xxxxxxxxxxxxx")
         a = Sqlite3Record.acquire().record_videos(video)
         print(a)
 
-        p = Path("luowen.txt")
+    def test_max_cursor_videos(self):
+        cursor = Sqlite3Record.acquire().current_videos_cursor()
+        print(cursor)
+
+    def test_videos(self):
+        result = Sqlite3Record.acquire().delta_videos(0)
+        print(result)
 
     def test_export(self):
         config_logging()
@@ -42,10 +48,4 @@ class DbTest(unittest.TestCase):
         logger.info("hehel uowen {name} {fmt}".format(name="luowen", fmt="{}"))
 
         print("end")
-<<<<<<< HEAD
         os.path("./")
-=======
-
-
-
->>>>>>> ad4c86b071614dd6da8d14adf184acc15e81b2a5

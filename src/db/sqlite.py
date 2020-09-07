@@ -13,6 +13,7 @@ from sqlite3.dbapi2 import Cursor
 from sqlite3 import dbapi2
 from src.config import setting_get
 from src.models.video import Video
+from src.util import pure_url, pure_title
 
 sqlite_locker = threading.RLock()
 logger = logging.getLogger(__name__)
@@ -57,7 +58,7 @@ class Sqlite3Record(object):
     def record_videos(self, data: Video) -> bool:
         sqlite_locker.acquire()
         cursor: Cursor = self.__db.cursor()
-        code: str = hashlib.md5(data.src.encode("utf-8")).hexdigest()
+        code: str = hashlib.md5(pure_url(data.src).encode("utf-8")).hexdigest()
         if len(code.strip()) <= 0:
             sqlite_locker.release()
             logger.error("record row: {} not contain code field".format(data))
@@ -67,8 +68,8 @@ class Sqlite3Record(object):
             logger.info("code:{} is record before".format(code))
             return False
         sql = "insert into videos (title, code, url, img) values (?, ?, ?, ?)"
-        img: str = hashlib.md5(data.img_src.encode("utf-8")).hexdigest() + ".jpg"
-        cursor.execute(sql, (data.title, code, data.src, img))
+        img: str = code + ".jpg"
+        cursor.execute(sql, (pure_title(data.title), code, pure_url(data.src), img))
         self.__db.commit()
         affect_row = cursor.rowcount
         sqlite_locker.release()
@@ -76,3 +77,22 @@ class Sqlite3Record(object):
             logger.error("sql: {} data: {} not success".format(sql, data))
             return False
         return True
+
+    def current_videos_cursor(self):
+        cursor: Cursor = self.__db.cursor()
+        cursor.execute("select max(id) from videos")
+        result = cursor.fetchone()
+        cursor.close()
+        return result[0]
+
+    def delta_videos(self, current_cursor: int):
+        resp_data = []
+        cursor: Cursor = self.__db.cursor()
+        cursor.execute("select id, title, url, code, created_date from videos where id > ?", (current_cursor,))
+        result = cursor.fetchall()
+        print(result)
+        cursor.close()
+        columns = ("id", "title", "url", "code", "created_date",)
+        for row in result:
+            resp_data.append(dict(zip(columns, row)))
+        return resp_data
