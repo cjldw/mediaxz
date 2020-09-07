@@ -66,7 +66,14 @@ class Recoder(object):
         if not Sqlite3Record.acquire().record_videos(item):
             logger.error("video: {} record to sqlite db failure".format(item))
             return None
-        self.__recorder.videos_list.append({"title": item.title, "img": item.img_src, "url": item.src})
+        hash_code = hashlib.md5(item.src.encode("utf-8")).hexdigest()
+        self.__recorder.videos_list.append({
+            "title": item.title,
+            "img": item.img_src,
+            "url": item.src,
+            "img_hash": hash_code + ".jpg",
+            "video_hash": hash_code + ".mp4"
+        })
         return self.__recorder.queue_channel.put(item)
 
     def export_json(self):
