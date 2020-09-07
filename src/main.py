@@ -5,20 +5,28 @@
 # desc:
 
 import click
-
+import logging
 from src.website.weib import WeiB
 from src.logs import config_logging
+
+logger = logging.getLogger(__name__)
 
 
 @click.command()
 @click.option('--website', type=click.Choice(["weibo", "douyu"], case_sensitive=False), default="weibo",
               help="which website to crawl")
+@click.option("--upload", type=click.Choice(["bili", "weibo"], case_sensitive=False), default="bili",
+              help="which website to upload")
 @click.option("--count", default=30, help="number of video crawl")
 def main(website: str, **kwargs):
     config_logging()
     if website == WeiB.name:
         weibo = WeiB(**kwargs)
-        return weibo.crawl()
+        if not weibo.crawl():
+            logger.error("crawl https://webo.cn failure")
+            return False
+
+
     raise ValueError("website {} not implemented".format(website))
 
 
