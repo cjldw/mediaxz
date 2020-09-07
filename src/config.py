@@ -9,7 +9,7 @@ from typing import Any, Optional, Union
 configs = {
     "queue_size": 10000,
     "download_thread_num": 3,
-    "download_output": "E:/codelab/python/mediaxz/output",
+    "download_output": "./output",
     "db": "E:/codelab/python/mediaxz/mediaxz.db",
     "hello": {"age": 12, "name": "luowen"},
     "world": [1, 2, 4, 4]

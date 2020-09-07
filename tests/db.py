@@ -6,6 +6,7 @@
 
 import unittest
 
+import os
 import json
 from src.db.sqlite import Sqlite3Record
 import sqlite3
@@ -33,3 +34,4 @@ class DbTest(unittest.TestCase):
             json.dump({"title": video.title, "img": video.img_src, "src": video.src}, fd, indent="  ", ensure_ascii=False)
 
         print("end")
+        os.path("./")

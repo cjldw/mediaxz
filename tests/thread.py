@@ -7,6 +7,7 @@
 
 import threading
 from queue import Queue
+from os import path
 
 q = Queue(100)
 
@@ -26,7 +27,6 @@ def main():
         q.put(item)
 
     q.join()
-    print("end1")
     T.join()
 
     print("end")
