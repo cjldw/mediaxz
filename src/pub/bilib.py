@@ -60,9 +60,9 @@ class BiliB(object):
         if tip.lower() != 'y':
             logger.error("don't login yet.")
             return False
-        self.browser.get(self.pub_url)
         for item in videos_ups:
             try:
+                self.browser.get(self.pub_url)
                 code = item.get("code", "")
                 abs_mp4file = self.download_dir.joinpath(code + ".mp4")
                 if not abs_mp4file.exists():
@@ -71,23 +71,60 @@ class BiliB(object):
                 upload_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located((By.XPATH, "//input[@name='buploader']")))
                 # ActionChains(self.browser).move_to_element(upload_element).click().perform()
-                upload_element.send_keys(abs_mp4file.absolute())
+                # print(upload_element.get_attribute("name"), upload_element.get_attribute("type"))
+                upload_element.send_keys(str(abs_mp4file.absolute()))
+                time.sleep(10)  # 确保视频上传完成
                 img_covert_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, ".cover-v2-preview-default")))
+                    EC.presence_of_element_located((By.XPATH, "//div[@class='cover-v2-preview']/input[@type='file']")))
                 if not self.gen_pub_image(code):
                     logger.error("cover image generate failure")
                     continue
                 cover_file = self.download_dir.joinpath(code + ".cover.jpg")
-                img_covert_element.send_keys(cover_file)
-                time.sleep(100)
+                img_covert_element.send_keys(str(cover_file.absolute()))
+                time.sleep(3)  # 确保图片上传完成
+                confirm_button_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".cover-chop-modal-v2-btn")))
+                ActionChains(self.browser).move_to_element(confirm_button_element).click().perform()
 
+                selector_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, ".select-box-v2-container .select-box-v2-controller")))
+                selector_element.click()
+
+                selector_daily_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, ".drop-cascader-list-wrp .drop-cascader-list-item"))
+                )
+                selector_daily_element.click()
+
+                title_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".input-box-v2-1-instance > input"))
+                )
+                title_element.send_keys(item.get("title", "搞笑视频"))
+
+                tags_elements: List[WebElement] = WebDriverWait(self.browser, self.timeout).until(
+                    EC.presence_of_all_elements_located(
+                        (By.CSS_SELECTOR, ".content-tag-v2-other-tag-wrp > .label-item-v2-2-container")))
+
+                if len(tags_elements) >= 4:
+                    tags_elements[3].click()
+                else:
+                    tags_elements[0].click()
+
+                submit_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, ".submit-button-group-v2-container > .submit-btn-group-add")))
+
+                ActionChains(self.browser).move_to_element(submit_element).click().perform()
+                time.sleep(5)
             except TimeoutException as e:
                 logger.error("find submit button timeout: {}".format(e.args[-1]))
                 continue
             except NoSuchElementException as e:
                 logger.error("not found submit button: {}".format(e.args[-1]))
                 continue
-            logger.info("do upload video: {}".format(item))
+        self.browser.close()
+        logger.info("do upload video: {}".format(item))
 
     def gen_pub_image(self, code: str) -> bool:
         img_file = self.download_dir.joinpath(code + ".jpg")
