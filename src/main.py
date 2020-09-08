@@ -24,13 +24,15 @@ def main(website: str, **kwargs):
 
     bili = BiliB()
     bili.pub()
-    return
+    return True
 
     if website == WeiB.name:
         weibo = WeiB(**kwargs)
         if not weibo.crawl():
             logger.error("crawl https://webo.cn failure")
             return False
+        # bili = BiliB()
+        # bili.pub()
         return True
     logger.error("application crawl not implement yet.")
 

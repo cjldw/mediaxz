@@ -6,3 +6,6 @@ output/
 __pycache__/
 
 build/
+*.jpg
+*.mp4
+*.png

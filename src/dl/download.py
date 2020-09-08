@@ -15,8 +15,8 @@ import shutil
 from pathlib import Path
 from threading import Thread
 from src.models.video import Video
-from src.db.sqlite import Sqlite3Record
 from queue import Queue
+from src.util import pure_url, pure_title
 from src.config import setting_get
 
 logger = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ class Download(Thread):
         if download_img_resp.status_code != 200:
             logger.error("item: {} images download failure, result: {}", video, download_img_resp.text)
             return False
-        filename: str = hashlib.md5(video.src.encode("utf-8")).hexdigest() + ".jpg"
+        filename: str = hashlib.md5(pure_url(video.src).encode("utf-8")).hexdigest() + ".jpg"
         download_dir = Path(self.download_dir)
         if not download_dir.exists():
             download_dir.mkdir(mode=644, parents=True)
@@ -66,7 +66,7 @@ class Download(Thread):
             self.queue.task_done()
             return False
 
-        filename: str = hashlib.md5(video.src.encode("utf-8")).hexdigest() + ".mp4"
+        filename: str = hashlib.md5(pure_url(video.src).encode("utf-8")).hexdigest() + ".mp4"
         abs_file = Path(self.download_dir).joinpath(filename)
         logger.info("download video file: {}".format(abs_file))
         with open(abs_file, "wb") as out_file:
