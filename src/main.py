@@ -13,19 +13,17 @@ from src.pub.bilib import BiliB
 logger = logging.getLogger(__name__)
 
 
-@click.command()
+@click.group()
+def entrance():
+    pass
+
+
+@entrance.command()
 @click.option('--website', type=click.Choice(["weibo", "douyu"], case_sensitive=False), default="weibo",
               help="which website to crawl")
-@click.option("--upload", type=click.Choice(["bili", "weibo"], case_sensitive=False), default="bili",
-              help="which website to upload")
 @click.option("--count", default=30, help="number of video crawl")
-def main(website: str, **kwargs):
+def download(website: str, **kwargs):
     config_logging()
-
-    bili = BiliB()
-    bili.pub()
-    return True
-
     if website == WeiB.name:
         weibo = WeiB(**kwargs)
         if not weibo.crawl():
@@ -37,5 +35,18 @@ def main(website: str, **kwargs):
     logger.error("application crawl not implement yet.")
 
 
+@entrance.command()
+@click.option("--target", type=click.Choice(["bili", "weibo"], case_sensitive=False), default="bili",
+              help="which website to upload")
+def upload(**kwargs) -> bool:
+    bili = BiliB()
+    bili.pub()
+    return True
+
+
+def launch():
+    click.CommandCollection(sources=[entrance])()
+
+
 if __name__ == '__main__':
-    main()
+    launch()

@@ -65,7 +65,7 @@ class BiliB(object):
             EC.presence_of_element_located((By.ID, "login-passwd")))
 
         username_element.send_keys(18767169856)
-        password_element.send_keys("aaaAAA111")
+        password_element.send_keys("")
         tip: str = input("are you login [Y/N]>> ")
         if tip.lower() != 'y':
             logger.error("don't login yet.")
