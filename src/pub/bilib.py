@@ -8,18 +8,21 @@ from __future__ import annotations
 
 import logging
 import json
+import shutil
+import time
 from typing import List, Any, Optional, Dict
 from PIL import Image
 from pathlib import Path
 from src.config import setting_get
+from src.util import remove_emoji
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-import time
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +59,13 @@ class BiliB(object):
             return False
         self.browser.maximize_window()
         self.browser.get(self.login_url)
+        username_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+            EC.presence_of_element_located((By.ID, "login-username")))
+        password_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+            EC.presence_of_element_located((By.ID, "login-passwd")))
+
+        username_element.send_keys(18767169856)
+        password_element.send_keys("aaaAAA111")
         tip: str = input("are you login [Y/N]>> ")
         if tip.lower() != 'y':
             logger.error("don't login yet.")
@@ -63,6 +73,7 @@ class BiliB(object):
         for item in videos_ups:
             try:
                 self.browser.get(self.pub_url)
+                time.sleep(2)
                 code = item.get("code", "")
                 abs_mp4file = self.download_dir.joinpath(code + ".mp4")
                 if not abs_mp4file.exists():
@@ -86,26 +97,38 @@ class BiliB(object):
                     EC.presence_of_element_located((By.CSS_SELECTOR, ".cover-chop-modal-v2-btn")))
                 ActionChains(self.browser).move_to_element(confirm_button_element).click().perform()
 
+                time.sleep(0.5)
                 selector_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, ".select-box-v2-container .select-box-v2-controller")))
-                selector_element.click()
+                        (By.CSS_SELECTOR, ".select-box-v2-controller")))
+                ActionChains(self.browser).move_to_element(selector_element).click().perform()
 
+                time.sleep(0.5)
                 selector_daily_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, ".drop-cascader-list-wrp .drop-cascader-list-item"))
                 )
-                selector_daily_element.click()
-
+                ActionChains(self.browser).move_to_element(selector_daily_element).click().perform()
                 title_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, ".input-box-v2-1-instance > input"))
+                    EC.presence_of_element_located((By.XPATH, "//div[@class='input-box-v2-1-instance']//input"))
                 )
-                title_element.send_keys(item.get("title", "搞笑视频"))
+                try:
+                    title_element.send_keys(Keys.BACKSPACE * 80)
+                    title_element.send_keys(item.get("title"))
+                    # code_js = """
+                    #         let e = document.querySelector("div.input-box-v2-1-instance input.input-box-v2-1-val");
+                    #         if (e != null)
+                    #             e.value = "{title}";
+                    # """.format(title=item.get("title"))
+                    # self.browser.execute_script(code_js)
+                except Exception as e:
+                    title_element.send_keys("无聊真香")
+                    logger.error("set title failure, err: {}".format(e.args[-1]))
 
                 tags_elements: List[WebElement] = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_all_elements_located(
                         (By.CSS_SELECTOR, ".content-tag-v2-other-tag-wrp > .label-item-v2-2-container")))
-
+                time.sleep(1.5)
                 if len(tags_elements) >= 4:
                     tags_elements[3].click()
                 else:
@@ -116,6 +139,7 @@ class BiliB(object):
                         (By.CSS_SELECTOR, ".submit-button-group-v2-container > .submit-btn-group-add")))
 
                 ActionChains(self.browser).move_to_element(submit_element).click().perform()
+                self.mark_as_completed(code)
                 time.sleep(5)
             except TimeoutException as e:
                 logger.error("find submit button timeout: {}".format(e.args[-1]))
@@ -123,8 +147,11 @@ class BiliB(object):
             except NoSuchElementException as e:
                 logger.error("not found submit button: {}".format(e.args[-1]))
                 continue
+            except Exception as e:
+                logger.error("unknow exception: {}".format(e.args))
+                continue
+            logger.info("do upload video: {}".format(item))
         self.browser.close()
-        logger.info("do upload video: {}".format(item))
 
     def gen_pub_image(self, code: str) -> bool:
         img_file = self.download_dir.joinpath(code + ".jpg")
@@ -146,4 +173,11 @@ class BiliB(object):
             background = Image.new(mode="RGB", size=(960, 600), color="white")
             background.paste(corp_img, (offset_x, 0))
             background.save(self.download_dir.joinpath(code + ".cover.jpg"))
+        return True
+
+    def mark_as_completed(self, code: str) -> bool:
+        mp4_file = self.download_dir.joinpath(code + ".mp4")
+        if not mp4_file.exists():
+            return False
+        shutil.move(str(mp4_file), str(self.download_dir.joinpath(code + ".mp4.bak")))
         return True
