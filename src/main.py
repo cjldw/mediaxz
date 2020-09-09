@@ -29,8 +29,6 @@ def download(website: str, **kwargs):
         if not weibo.crawl():
             logger.error("crawl https://webo.cn failure")
             return False
-        # bili = BiliB()
-        # bili.pub()
         return True
     logger.error("application crawl not implement yet.")
 

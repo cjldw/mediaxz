@@ -66,7 +66,7 @@ class BiliB(object):
 
         username_element.send_keys(18767169856)
         password_element.send_keys("")
-        tip: str = input("are you login [Y/N]>> ")
+        tip: str = input("[........] waiting for login: [Y/N]>> ")
         if tip.lower() != 'y':
             logger.error("don't login yet.")
             return False
