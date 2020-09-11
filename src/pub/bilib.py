@@ -84,7 +84,7 @@ class BiliB(object):
                 # ActionChains(self.browser).move_to_element(upload_element).click().perform()
                 # print(upload_element.get_attribute("name"), upload_element.get_attribute("type"))
                 upload_element.send_keys(str(abs_mp4file.absolute()))
-                time.sleep(10)  # 确保视频上传完成
+                time.sleep(7)  # 确保视频上传完成
                 img_covert_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located((By.XPATH, "//div[@class='cover-v2-preview']/input[@type='file']")))
                 if not self.gen_pub_image(code):
@@ -92,7 +92,7 @@ class BiliB(object):
                     continue
                 cover_file = self.download_dir.joinpath(code + ".cover.jpg")
                 img_covert_element.send_keys(str(cover_file.absolute()))
-                time.sleep(3)  # 确保图片上传完成
+                time.sleep(2)  # 确保图片上传完成
                 confirm_button_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, ".cover-chop-modal-v2-btn")))
                 ActionChains(self.browser).move_to_element(confirm_button_element).click().perform()
@@ -140,7 +140,7 @@ class BiliB(object):
 
                 ActionChains(self.browser).move_to_element(submit_element).click().perform()
                 self.mark_as_completed(code)
-                time.sleep(5)
+                time.sleep(4)
             except TimeoutException as e:
                 logger.error("find submit button timeout: {}".format(e.args[-1]))
                 continue

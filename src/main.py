@@ -19,7 +19,7 @@ def entrance():
 
 
 @entrance.command()
-@click.option('--website', type=click.Choice(["weibo", "douyu"], case_sensitive=False), default="weibo",
+@click.option('--website', type=click.Choice(["weibo", "xinpianchang"], case_sensitive=False), default="weibo",
               help="which website to crawl")
 @click.option("--count", default=30, help="number of video crawl")
 def download(website: str, **kwargs):
