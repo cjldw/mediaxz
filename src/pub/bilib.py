@@ -122,7 +122,7 @@ class BiliB(object):
                     # """.format(title=item.get("title"))
                     # self.browser.execute_script(code_js)
                 except Exception as e:
-                    title_element.send_keys("无聊真香")
+                    title_element.send_keys("无聊真香: {}".format())
                     logger.error("set title failure, err: {}".format(e.args[-1]))
 
                 tags_elements: List[WebElement] = WebDriverWait(self.browser, self.timeout).until(
@@ -140,7 +140,7 @@ class BiliB(object):
 
                 ActionChains(self.browser).move_to_element(submit_element).click().perform()
                 self.mark_as_completed(code)
-                time.sleep(4)
+                time.sleep(5)
             except TimeoutException as e:
                 logger.error("find submit button timeout: {}".format(e.args[-1]))
                 continue
