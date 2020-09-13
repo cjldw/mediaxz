@@ -73,6 +73,7 @@ class BiliB(object):
         for item in videos_ups:
             try:
                 self.browser.get(self.pub_url)
+                self.browser.refresh()  # 看看能不能不要出极验
                 time.sleep(2)
                 code = item.get("code", "")
                 abs_mp4file = self.download_dir.joinpath(code + ".mp4")
@@ -106,7 +107,8 @@ class BiliB(object):
                 time.sleep(0.5)
                 selector_daily_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, ".drop-cascader-list-wrp .drop-cascader-list-item"))
+                        # (By.CSS_SELECTOR, ".drop-cascader-list-wrp .drop-cascader-list-item"))
+                        (By.XPATH, "//div[@class='drop-cascader-list-wrp']/div[@class='drop-cascader-list-item'][2]"))
                 )
                 ActionChains(self.browser).move_to_element(selector_daily_element).click().perform()
                 title_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
@@ -122,7 +124,7 @@ class BiliB(object):
                     # """.format(title=item.get("title"))
                     # self.browser.execute_script(code_js)
                 except Exception as e:
-                    title_element.send_keys("无聊真香: {}".format())
+                    title_element.send_keys("无聊真香: {}".format(time.strftime("%Y%m%d %H:%M:%S")))
                     logger.error("set title failure, err: {}".format(e.args[-1]))
 
                 tags_elements: List[WebElement] = WebDriverWait(self.browser, self.timeout).until(

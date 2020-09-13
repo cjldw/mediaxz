@@ -19,6 +19,7 @@ from pathlib import Path
 import pathlib
 
 from src.config import setting_get
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,8 @@ class DbTest(unittest.TestCase):
         print(result)
 
     def test_export(self):
+        print(now)
+        return
         config_logging()
         video = Video(title="罗文辉就是我", img_src="https://img2.zhanqi.com/aa.jgp", src="xxxxxxxxxxxxx")
         with open("d.json", mode="w", encoding="utf-8") as fd:
