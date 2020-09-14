@@ -36,8 +36,9 @@ def download(website: str, **kwargs):
 @entrance.command()
 @click.option("--target", type=click.Choice(["bili", "weibo"], case_sensitive=False), default="bili",
               help="which website to upload")
+@click.option("--from", default="微博", help="video copy from")
 def upload(**kwargs) -> bool:
-    bili = BiliB()
+    bili = BiliB(**kwargs)
     bili.pub()
     return True
 

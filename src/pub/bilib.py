@@ -14,7 +14,6 @@ from typing import List, Any, Optional, Dict
 from PIL import Image
 from pathlib import Path
 from src.config import setting_get
-from src.util import remove_emoji
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
@@ -42,6 +41,7 @@ class BiliB(object):
             timeout = 10
         self.timeout = timeout
         self.download_dir = Path(setting_get("download_output"))
+        self.options = kwargs
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--mute-audio")
         chrome_options.add_argument("--incognito")
@@ -98,19 +98,50 @@ class BiliB(object):
                     EC.presence_of_element_located((By.CSS_SELECTOR, ".cover-chop-modal-v2-btn")))
                 ActionChains(self.browser).move_to_element(confirm_button_element).click().perform()
 
-                time.sleep(0.5)
+                time.sleep(0.3)
+                # 转载处理
+                from_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                    EC.presence_of_element_located(
+                        (By.XPATH,
+                         "//div[@class='copyright-v2-check-radio-wrp']/div[@class='check-radio-v2-container'][2]")
+                    )
+                )
+                ActionChains(self.browser).move_to_element(from_element).move_to_element(from_element).click().perform()
+                time.sleep(0.3)
+                from_text_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                    EC.presence_of_element_located((By.XPATH, "//div[@class='copyright-v2-source-input-wrp']//input"))
+                )
+                from_text_element.send_keys(self.options.get("from", "微博"))
+
                 selector_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, ".select-box-v2-controller")))
                 ActionChains(self.browser).move_to_element(selector_element).click().perform()
 
-                time.sleep(0.5)
-                selector_daily_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
-                    EC.presence_of_element_located(
-                        # (By.CSS_SELECTOR, ".drop-cascader-list-wrp .drop-cascader-list-item"))
-                        (By.XPATH, "//div[@class='drop-cascader-list-wrp']/div[@class='drop-cascader-list-item'][2]"))
-                )
-                ActionChains(self.browser).move_to_element(selector_daily_element).click().perform()
+                time.sleep(0.2)
+                top_selector_elements: List[WebElement] = WebDriverWait(self.browser, self.timeout).until(
+                    EC.presence_of_all_elements_located(
+                        (By.XPATH, "//div[@class='drop-cascader-pre-wrp']/div[@class='drop-cascader-pre-item']")))
+                for top_selector in top_selector_elements:
+                    if top_selector.text == "生活":
+                        ActionChains(self.browser).move_to_element(top_selector).click().perform()
+                        break
+                time.sleep(0.3)
+                son_selector_elements: List[WebElement] = WebDriverWait(self.browser, self.timeout).until(
+                    EC.presence_of_all_elements_located(
+                        (By.XPATH, "//div[@class='drop-cascader-list-wrp']/div[@class='drop-cascader-list-item']")))
+                son_selected: bool = False
+                for son_selector in son_selector_elements:
+                    if son_selector.text.startswith("搞笑"):
+                        ActionChains(self.browser).move_to_element(son_selector).click().perform()
+                        son_selected = True
+                        break
+                if not son_selected:
+                    son_default_selector: List[WebElement] = WebDriverWait(self.browser, self.timeout).until(
+                        EC.presence_of_element_located(
+                            (By.XPATH, "//div[@class='drop-cascader-list-wrp']/div[@class='drop-cascader-list-item']")))
+                    ActionChains(self.browser).move_to_element(son_default_selector).click().perform()
+
                 title_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located((By.XPATH, "//div[@class='input-box-v2-1-instance']//input"))
                 )
