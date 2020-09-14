@@ -47,6 +47,8 @@ class BiliB(object):
         chrome_options.add_argument("--incognito")
         chrome_options.add_argument("--disabled-plugins-discovery")
         self.browser = Chrome(chrome_options=chrome_options)
+        self.browser.execute_script(
+            "window.alert = window.confirm = window.prompt = window.onbeforeunload = function() {}")  # ignor
 
     def pub(self):
         loadfile = self.download_dir.joinpath("videos.json")
@@ -73,7 +75,6 @@ class BiliB(object):
         for item in videos_ups:
             try:
                 self.browser.get(self.pub_url)
-                self.browser.refresh()  # 看看能不能不要出极验
                 time.sleep(2)
                 code = item.get("code", "")
                 abs_mp4file = self.download_dir.joinpath(code + ".mp4")
@@ -85,7 +86,7 @@ class BiliB(object):
                 # ActionChains(self.browser).move_to_element(upload_element).click().perform()
                 # print(upload_element.get_attribute("name"), upload_element.get_attribute("type"))
                 upload_element.send_keys(str(abs_mp4file.absolute()))
-                time.sleep(7)  # 确保视频上传完成
+                time.sleep(10)  # 确保视频上传完成
                 img_covert_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located((By.XPATH, "//div[@class='cover-v2-preview']/input[@type='file']")))
                 if not self.gen_pub_image(code):
