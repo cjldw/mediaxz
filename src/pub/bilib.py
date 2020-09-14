@@ -107,21 +107,23 @@ class BiliB(object):
                     )
                 )
                 ActionChains(self.browser).move_to_element(from_element).move_to_element(from_element).click().perform()
-                time.sleep(0.3)
+                time.sleep(1)
                 from_text_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
-                    EC.presence_of_element_located((By.XPATH, "//div[@class='copyright-v2-source-input-wrp']//input"))
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR,
+                         ".copyright-v2-source-input-wrp .input-box-v2-1-container .input-box-v2-1-instance input")
+                    )
                 )
-                from_text_element.send_keys(self.options.get("from", "微博"))
-
+                from_text_element.send_keys(item.get("href", "微博"))
                 selector_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, ".select-box-v2-controller")))
                 ActionChains(self.browser).move_to_element(selector_element).click().perform()
-
-                time.sleep(0.2)
+                time.sleep(1)
                 top_selector_elements: List[WebElement] = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_all_elements_located(
                         (By.XPATH, "//div[@class='drop-cascader-pre-wrp']/div[@class='drop-cascader-pre-item']")))
+
                 for top_selector in top_selector_elements:
                     if top_selector.text == "生活":
                         ActionChains(self.browser).move_to_element(top_selector).click().perform()
@@ -143,7 +145,10 @@ class BiliB(object):
                     ActionChains(self.browser).move_to_element(son_default_selector).click().perform()
 
                 title_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
-                    EC.presence_of_element_located((By.XPATH, "//div[@class='input-box-v2-1-instance']//input"))
+                    EC.presence_of_element_located(
+                        (By.XPATH,
+                         "//div[@class='content-title-v2-input-wrp']//div[@class='input-box-v2-1-instance']/input")
+                    )
                 )
                 try:
                     title_element.send_keys(Keys.BACKSPACE * 80)

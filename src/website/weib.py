@@ -80,6 +80,7 @@ class WeiB(Browser):
         for video_element in items:
             try:
                 video_title_element: WebElement = video_element.find_element_by_css_selector("h3.list_title_s")
+                video_url_element: WebElement = video_element.find_element_by_css_selector("h3.list_title_s > a")
                 video_img_src_element: WebElement = video_element.find_element_by_css_selector(".vid.W_piccut_v img")
 
                 video_play_element = video_element.find_element_by_css_selector(".vid.W_piccut_v")
@@ -88,6 +89,7 @@ class WeiB(Browser):
 
                 video_title: str = video_title_element.text if video_title_element is not None else ""
                 video_title = video_title.replace("#", "").replace("\n", "")
+                video_url: str = video_url_element.get_attribute("href")
                 video_img_src: str = video_img_src_element. \
                     get_attribute("src") if video_img_src_element is not None else ""
                 video_src: str = video_src_element.get_attribute("src") if video_src_element is not None else ""
@@ -95,9 +97,10 @@ class WeiB(Browser):
                 logger.info("current video title: {} img_src:{}, video_src: {}".format(
                     video_title,
                     video_img_src,
-                    video_src
+                    video_src,
+                    video_url
                 ))
-                item = Video(title=video_title, img_src=video_img_src, src=video_src)
+                item = Video(title=video_title, img_src=video_img_src, src=video_src, href=video_url)
                 Recoder.acquire().dispatch_video(item)
                 logger.info("dispatch: {} to download task job".format(item.src))
 

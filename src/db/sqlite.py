@@ -67,9 +67,9 @@ class Sqlite3Record(object):
             sqlite_locker.release()
             logger.info("code:{} is record before".format(code))
             return False
-        sql = "insert into videos (title, code, url, img) values (?, ?, ?, ?)"
+        sql = "insert into videos (title, code, url, img, href) values (?, ?, ?, ?, ?)"
         img: str = code + ".jpg"
-        cursor.execute(sql, (pure_title(data.title), code, pure_url(data.src), img))
+        cursor.execute(sql, (pure_title(data.title), code, pure_url(data.src), img, data.href))
         self.__db.commit()
         affect_row = cursor.rowcount
         sqlite_locker.release()
@@ -88,11 +88,10 @@ class Sqlite3Record(object):
     def delta_videos(self, current_cursor: int):
         resp_data = []
         cursor: Cursor = self.__db.cursor()
-        cursor.execute("select id, title, url, code, created_date from videos where id > ?", (current_cursor,))
+        cursor.execute("select id, title, url, href, code, created_date from videos where id > ?", (current_cursor,))
         result = cursor.fetchall()
-        print(result)
         cursor.close()
-        columns = ("id", "title", "url", "code", "created_date",)
+        columns = ("id", "title", "url", "href", "code", "created_date",)
         for row in result:
             resp_data.append(dict(zip(columns, row)))
         return resp_data

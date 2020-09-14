@@ -7,14 +7,8 @@
 
 
 class Video(object):
-    title: str
-
-    img_src: str
-
-    src: str
-
-    def __init__(self, title: str, img_src: str, src: str):
+    def __init__(self, title: str, img_src: str, src: str, href: str):
         self.title = title
         self.img_src = img_src
         self.src = src
-
+        self.href = href

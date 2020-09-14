@@ -40,7 +40,6 @@ class DbTest(unittest.TestCase):
         print(result)
 
     def test_export(self):
-        print(now)
         return
         config_logging()
         video = Video(title="罗文辉就是我", img_src="https://img2.zhanqi.com/aa.jgp", src="xxxxxxxxxxxxx")
