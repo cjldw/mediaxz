@@ -4,13 +4,16 @@
 # time: 2018/9/29 21:41
 # desc: crawl
 
+from src.website.weib import WeiB
 
-class Crawl(object):
-    name = ""
 
-    start_url = ""
+class CrawlFactory(object):
+    def __init__(self, options: dict):
+        self.options = options
 
     def crawl(self):
-        pass
-
-
+        clazz = self.options.get("website", None)
+        if not clazz or len(clazz) <= 0:
+            raise ValueError("clazz not configuration")
+        if clazz == WeiB.name:
+            return WeiB(self.options)

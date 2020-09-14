@@ -126,7 +126,7 @@ class BiliB(object):
                         (By.XPATH, "//div[@class='drop-cascader-pre-wrp']/div[@class='drop-cascader-pre-item']")))
 
                 for top_selector in top_selector_elements:
-                    if top_selector.text == "生活":
+                    if top_selector.text.startswith(self.options.get("classify", "生活")):
                         ActionChains(self.browser).move_to_element(top_selector).click().perform()
                         break
                 time.sleep(0.3)
@@ -135,7 +135,7 @@ class BiliB(object):
                         (By.XPATH, "//div[@class='drop-cascader-list-wrp']/div[@class='drop-cascader-list-item']")))
                 son_selected: bool = False
                 for son_selector in son_selector_elements:
-                    if son_selector.text.startswith("搞笑"):
+                    if son_selector.text.startswith(self.options.get("sub-classify", "搞笑")):
                         ActionChains(self.browser).move_to_element(son_selector).click().perform()
                         son_selected = True
                         break
