@@ -6,7 +6,7 @@
 # @time: 9/5/2020 12:30 AM
 
 
-class Video(object):
+class VideoItem(object):
     def __init__(self, title: str, img_src: str, src: str, href: str):
         self.title = title
         self.img_src = img_src

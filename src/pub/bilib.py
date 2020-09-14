@@ -99,23 +99,25 @@ class BiliB(object):
                     EC.presence_of_element_located((By.CSS_SELECTOR, ".cover-chop-modal-v2-btn")))
                 ActionChains(self.browser).move_to_element(confirm_button_element).click().perform()
 
+                if self.options.get("copy"):  # 转载处理
+                    from_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                        EC.presence_of_element_located(
+                            (By.XPATH,
+                             "//div[@class='copyright-v2-check-radio-wrp']/div[@class='check-radio-v2-container'][2]")
+                        )
+                    )
+                    ActionChains(self.browser).move_to_element(from_element).move_to_element(
+                        from_element).click().perform()
+                    time.sleep(1)
+                    from_text_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                        EC.presence_of_element_located(
+                            (By.CSS_SELECTOR,
+                             ".copyright-v2-source-input-wrp .input-box-v2-1-container .input-box-v2-1-instance input")
+                        )
+                    )
+                    from_text_element.send_keys(item.get("href", "微博"))
+                self.browser.execute_script("window.scrollBy(0, 100)")
                 time.sleep(0.3)
-                # 转载处理
-                from_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
-                    EC.presence_of_element_located(
-                        (By.XPATH,
-                         "//div[@class='copyright-v2-check-radio-wrp']/div[@class='check-radio-v2-container'][2]")
-                    )
-                )
-                ActionChains(self.browser).move_to_element(from_element).move_to_element(from_element).click().perform()
-                time.sleep(1)
-                from_text_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
-                    EC.presence_of_element_located(
-                        (By.CSS_SELECTOR,
-                         ".copyright-v2-source-input-wrp .input-box-v2-1-container .input-box-v2-1-instance input")
-                    )
-                )
-                from_text_element.send_keys(item.get("href", "微博"))
                 selector_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, ".select-box-v2-controller")))

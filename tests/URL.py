@@ -14,14 +14,27 @@ from datetime import datetime
 
 
 def main():
-    print("luowen        ".strip())
-    a = [(1, 2, 3, 4)]
-    b = [("name", "age", "hobby", "lover")]
+    url = "//hbimg.huabanimg.com/5405ea81d6912d96adbf866438317c8f1a27cf844b38c-i64GS2_fw236/format/webp?r=23&a=111"
+    result: ParseResult = urlparse(url)
+    print(result)
 
-    print(datetime.now().strftime("%Y-%m-%d %H:%t:%S"))
-    print(a * 3)
-    print(dict(zip(b * 3, a * 3)))
+
+class D(object):
+    name = None
+
+    def __init__(self):
+        self.name = "luowen"
+
+    class DD(object):
+        def getname(self):
+            pass
+
+    def OK(self):
+        sub = self.DD()
+        sub.getname()
 
 
 if __name__ == '__main__':
-    main()
+    d = D()
+    print(d.name)
+    d.OK()

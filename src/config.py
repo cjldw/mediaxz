@@ -10,10 +10,7 @@ configs = {
     "queue_size": 10000,
     "download_thread_num": 3,
     "download_output": "./output",
-    "db": "E:/codelab/python/mediaxz/mediaxz.db",
     "timeout": 5,
-    "hello": {"age": 12, "name": "luowen"},
-    "world": [1, 2, 4, 4]
 }
 
 

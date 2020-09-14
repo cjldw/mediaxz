@@ -15,8 +15,8 @@ from src.dl.download import Download
 from queue import Queue
 from src.config import setting_get
 from typing import List
-from src.models.video import Video
-from src.db.sqlite import Sqlite3Record
+from src.models.video import VideoItem
+from src.db.weibo_video_db import WeiBoVideoDB
 from pathlib import Path
 from src.util import pure_url
 from datetime import datetime
@@ -56,16 +56,17 @@ class Recoder(object):
                 thread.setName("download-thread-{}".format(index))
                 thread.start()
 
+        Recoder.__recorder.db = WeiBoVideoDB(options)
         record_locker.release()
         return Recoder.__recorder
 
-    def dispatch_video(self, item: Video) -> None:
+    def dispatch_video(self, item: VideoItem) -> None:
         video_hash: str = hashlib.md5(pure_url(item.src).encode("utf-8")).hexdigest()
-        if Sqlite3Record.acquire(self.__recorder.options).exists(video_hash):
+        if self.__recorder.db.exists(video_hash):
             logger.info("video_hash: {} item: {} is record in sqlite db".format(video_hash, item))
             return None
         logger.info("record dispatch data: {}".format(item))
-        if not Sqlite3Record.acquire(self.__recorder.options).record_videos(item):
+        if not self.__recorder.db.record_videos(item):
             logger.error("video: {} record to sqlite db failure".format(item))
             return None
         return self.__recorder.queue_channel.put(item)
@@ -101,11 +102,11 @@ class Recoder(object):
         if abs_file.exists():
             shutil.move(abs_file, download_dir.joinpath(
                 "videos.json-{}".format(datetime.now().strftime("%Y%m%d%H%M%S"))))
-        result = Sqlite3Record.acquire(self.__recorder.options).delta_videos(self.load_dump())
+        result = self.__recorder.db.delta_videos(self.load_dump())
         with open(abs_file, mode="w", encoding="utf-8") as fd:
             dump(result, fd, indent="  ", ensure_ascii=False)
         logger.info("export all video to videos.json")
-        self.reset_dump(Sqlite3Record.acquire(self.__recorder.options).current_videos_cursor())
+        self.reset_dump(self.__recorder.db.current_videos_cursor())
 
     def dispose(self):
         self.queue_channel.join()

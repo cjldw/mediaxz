@@ -20,8 +20,8 @@ def entrance():
 
 
 @entrance.command()
-@click.option('--website', type=click.Choice(["weibo", "xinpianchang"], case_sensitive=False), default="weibo",
-              help="which website to crawl")
+@click.option('--website', type=click.Choice(["weibo", "huaban", "xinpianchang"], case_sensitive=False),
+              default="weibo", help="which website to crawl")
 @click.option("--db", default="./mediaxz.db", help="database file path")
 @click.option("--count", default=30, help="number of video crawl")
 def download(**kwargs):
@@ -37,6 +37,7 @@ def download(**kwargs):
 @entrance.command()
 @click.option("--target", type=click.Choice(["bili", "weibo"], case_sensitive=False), default="bili",
               help="which website to upload")
+@click.option("--copy", type=click.BOOL(), default=False, help="copy from other website or not")
 @click.option("--classify", default="生活", help="classify of video")
 @click.option("--sub-classify", default="搞笑", help="subset classify of video")
 def upload(**kwargs) -> bool:

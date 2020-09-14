@@ -9,14 +9,13 @@ import time
 
 from typing import List
 from src.website.browser import Browser
-from selenium.webdriver import ChromeOptions, Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
-from src.models.video import Video
+from src.models.video import VideoItem
 from src.record import Recoder
 
 logger = logging.getLogger(__name__)
@@ -25,20 +24,10 @@ logger = logging.getLogger(__name__)
 class WeiB(Browser):
     name: str = "weibo"
 
-    browser: Chrome = None
-
     def __init__(self, options: dict):
+        super().__init__(options)
         self.count = options.get("count", 10)
         self.url = options.get("url", "https://weibo.com/?category=10011")
-        chrome_options = ChromeOptions()
-        chrome_options.add_argument("--mute-audio")
-        chrome_options.add_argument("--incognito")
-        chrome_options.add_argument("--disable-plugins-discovery")
-        if options.get("headless"):
-            chrome_options.headless = True
-        self.timeout = options.get("timeout", 10)
-        self.browser = Chrome(chrome_options=chrome_options)
-        self.options = options
 
     def crawl(self) -> bool:
         self.browser.maximize_window()
@@ -101,7 +90,7 @@ class WeiB(Browser):
                     video_src,
                     video_url
                 ))
-                item = Video(title=video_title, img_src=video_img_src, src=video_src, href=video_url)
+                item = VideoItem(title=video_title, img_src=video_img_src, src=video_src, href=video_url)
                 Recoder.acquire(self.options).dispatch_video(item)
                 logger.info("dispatch: {} to download task job".format(item.src))
 

@@ -7,13 +7,26 @@
 import logging
 from selenium.webdriver import Chrome
 
+from selenium.webdriver import Chrome, ChromeOptions
+
 logger = logging.getLogger(__name__)
 
 
 class Browser(object):
+    tabs: dict = {}
+
     browser: Chrome = None
 
-    tabs: dict = {}
+    def __init__(self, options: dict):
+        chrome_options = ChromeOptions()
+        chrome_options.add_argument("--mute-audio")
+        chrome_options.add_argument("--incognito")
+        chrome_options.add_argument("--disable-plugins-discovery")
+        if options.get("headless"):
+            chrome_options.headless = True
+        self.timeout = options.get("timeout", 10)
+        self.browser = Chrome(chrome_options=chrome_options)
+        self.options = options
 
     def tab_close(self, tab: str):
         try:
@@ -47,3 +60,6 @@ class Browser(object):
             except Exception as e:
                 logger.error("close tab: {} failure, err: {}".format(tab, e.args[-1]))
         return True
+
+    def crawl(self):
+        raise NotImplementedError('not implement')

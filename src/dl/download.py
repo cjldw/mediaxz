@@ -14,7 +14,7 @@ import shutil
 
 from pathlib import Path
 from threading import Thread
-from src.models.video import Video
+from src.models.video import VideoItem
 from queue import Queue
 from src.util import pure_url, pure_title
 from src.config import setting_get
@@ -25,14 +25,14 @@ logger = logging.getLogger(__name__)
 class Download(Thread):
     daemon = True
 
-    def __init__(self, queue: Queue):
-        super().__init__()
+    def __init__(self, queue: Queue, **kwargs):
+        super().__init__(**kwargs)
         self.queue: Queue = queue
         self.download_dir = setting_get("download_output")
 
     def run(self) -> None:
         while True:
-            video: Video = self.queue.get()
+            video: VideoItem = self.queue.get()
             logger.info("{} handler {}".format(self.getName(), video.title))
             try:
                 self.download_img(video)
@@ -43,7 +43,7 @@ class Download(Thread):
             finally:
                 self.queue.task_done()
 
-    def download_img(self, video: Video) -> bool:
+    def download_img(self, video: VideoItem) -> bool:
         download_img_resp = requests.get(video.img_src, stream=True)
         if download_img_resp.status_code != 200:
             logger.error("item: {} images download failure, result: {}", video, download_img_resp.text)
@@ -59,7 +59,7 @@ class Download(Thread):
         del download_img_resp
         return True
 
-    def download_video(self, video: Video) -> bool:
+    def download_video(self, video: VideoItem) -> bool:
         download_video_resp = requests.get(video.src, stream=True)
         if download_video_resp.status_code != 200:
             logger.error("download video: {} failre, err: {}".format(video.src, download_video_resp.text))

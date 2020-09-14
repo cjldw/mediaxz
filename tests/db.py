@@ -12,7 +12,7 @@ from src.db.sqlite import Sqlite3Record
 import sqlite3
 import logging
 
-from src.models.video import Video
+from src.models.video import VideoItem
 
 from src.logs import config_logging
 from pathlib import Path
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class DbTest(unittest.TestCase):
 
     def test_record_videos(self):
-        video = Video(title="luowen", img_src="https://img2.zhanqi.com/aa.jgp", src="xxxxxxxxxxxxx")
+        video = VideoItem(title="luowen", img_src="https://img2.zhanqi.com/aa.jgp", src="xxxxxxxxxxxxx")
         a = Sqlite3Record.acquire().record_videos(video)
         print(a)
 
@@ -42,7 +42,7 @@ class DbTest(unittest.TestCase):
     def test_export(self):
         return
         config_logging()
-        video = Video(title="罗文辉就是我", img_src="https://img2.zhanqi.com/aa.jgp", src="xxxxxxxxxxxxx")
+        video = VideoItem(title="罗文辉就是我", img_src="https://img2.zhanqi.com/aa.jgp", src="xxxxxxxxxxxxx")
         with open("d.json", mode="w", encoding="utf-8") as fd:
             json.dump({"title": video.title, "img": video.img_src, "src": video.src}, fd, indent="  ",
                       ensure_ascii=False)
