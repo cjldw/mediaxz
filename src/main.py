@@ -9,6 +9,7 @@ import logging
 from src.website.weib import WeiB
 from src.logs import config_logging
 from src.pub.bilib import BiliB
+from src.config import configs
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +22,13 @@ def entrance():
 @entrance.command()
 @click.option('--website', type=click.Choice(["weibo", "xinpianchang"], case_sensitive=False), default="weibo",
               help="which website to crawl")
+@click.option("--db", default="./mediaxz.db", help="database file path")
 @click.option("--count", default=30, help="number of video crawl")
-def download(website: str, **kwargs):
+def download(**kwargs):
     config_logging()
-    if website == WeiB.name:
-        weibo = WeiB(**kwargs)
+    configs.update(kwargs)
+    if configs.get("website") == WeiB.name:
+        weibo = WeiB(configs)
         if not weibo.crawl():
             logger.error("crawl https://webo.cn failure")
             return False
@@ -38,7 +41,8 @@ def download(website: str, **kwargs):
               help="which website to upload")
 @click.option("--from", default="微博", help="video copy from")
 def upload(**kwargs) -> bool:
-    bili = BiliB(**kwargs)
+    configs.update(kwargs)
+    bili = BiliB(configs)
     bili.pub()
     return True
 

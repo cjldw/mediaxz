@@ -27,17 +27,18 @@ class WeiB(Browser):
 
     browser: Chrome = None
 
-    def __init__(self, **kwargs):
-        self.count = kwargs.get("count", 10)
-        self.url = kwargs.get("url", "https://weibo.com/?category=10011")
+    def __init__(self, options: dict):
+        self.count = options.get("count", 10)
+        self.url = options.get("url", "https://weibo.com/?category=10011")
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--mute-audio")
         chrome_options.add_argument("--incognito")
         chrome_options.add_argument("--disable-plugins-discovery")
-        if kwargs.get("headless"):
+        if options.get("headless"):
             chrome_options.headless = True
-        self.timeout = kwargs.get("timeout", 10)
+        self.timeout = options.get("timeout", 10)
         self.browser = Chrome(chrome_options=chrome_options)
+        self.options = options
 
     def crawl(self) -> bool:
         self.browser.maximize_window()
@@ -58,8 +59,8 @@ class WeiB(Browser):
             return False
         finally:
             self.tab_close(self.url)
-            Recoder.acquire().export_json()
-            Recoder.acquire().dispose()
+            Recoder.acquire(self.options).export_json()
+            Recoder.acquire(self.options).dispose()
 
     def query_video_element(self, cursor: int) -> bool:
         self.browser.execute_script("window.scrollBy(0, 1000)")
@@ -101,7 +102,7 @@ class WeiB(Browser):
                     video_url
                 ))
                 item = Video(title=video_title, img_src=video_img_src, src=video_src, href=video_url)
-                Recoder.acquire().dispatch_video(item)
+                Recoder.acquire(self.options).dispatch_video(item)
                 logger.info("dispatch: {} to download task job".format(item.src))
 
             except NoSuchElementException as e:

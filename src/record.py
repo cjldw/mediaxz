@@ -7,9 +7,10 @@ from __future__ import annotations
 import logging
 
 import shutil
-from json import load, dump, JSONDecodeError
 import threading
 import hashlib
+from typing import Dict, Any
+from json import load, dump, JSONDecodeError
 from src.dl.download import Download
 from queue import Queue
 from src.config import setting_get
@@ -37,13 +38,14 @@ class Recoder(object):
         record_locker.release()
 
     @staticmethod
-    def acquire() -> Recoder:
+    def acquire(options: Dict[str, Any]) -> Recoder:
         record_locker.acquire()
         if Recoder.__recorder is None:
             maxsize = setting_get("queue_size")
             queue: Queue = Queue(maxsize=maxsize if maxsize > 0 else 1000)
             Recoder.__recorder = Recoder()
             Recoder.queue_channel = queue
+            Recoder.__recorder.options = options
             Recoder.__recorder.threads: List[Download] = []
             # initialize download thread
             thread_num = setting_get("download_thread_num")
@@ -59,11 +61,11 @@ class Recoder(object):
 
     def dispatch_video(self, item: Video) -> None:
         video_hash: str = hashlib.md5(pure_url(item.src).encode("utf-8")).hexdigest()
-        if Sqlite3Record.acquire().exists(video_hash):
+        if Sqlite3Record.acquire(self.__recorder.options).exists(video_hash):
             logger.info("video_hash: {} item: {} is record in sqlite db".format(video_hash, item))
             return None
         logger.info("record dispatch data: {}".format(item))
-        if not Sqlite3Record.acquire().record_videos(item):
+        if not Sqlite3Record.acquire(self.__recorder.options).record_videos(item):
             logger.error("video: {} record to sqlite db failure".format(item))
             return None
         return self.__recorder.queue_channel.put(item)
@@ -99,11 +101,11 @@ class Recoder(object):
         if abs_file.exists():
             shutil.move(abs_file, download_dir.joinpath(
                 "videos.json-{}".format(datetime.now().strftime("%Y%m%d%H%M%S"))))
-        result = Sqlite3Record.acquire().delta_videos(self.load_dump())
+        result = Sqlite3Record.acquire(self.__recorder.options).delta_videos(self.load_dump())
         with open(abs_file, mode="w", encoding="utf-8") as fd:
             dump(result, fd, indent="  ", ensure_ascii=False)
         logger.info("export all video to videos.json")
-        self.reset_dump(Sqlite3Record.acquire().current_videos_cursor())
+        self.reset_dump(Sqlite3Record.acquire(self.__recorder.options).current_videos_cursor())
 
     def dispose(self):
         self.queue_channel.join()

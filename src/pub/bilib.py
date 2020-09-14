@@ -35,13 +35,13 @@ class BiliB(object):
 
     pub_url: str = "https://member.bilibili.com/video/upload.html"
 
-    def __init__(self, **kwargs):
-        timeout = kwargs.get("timeout")
+    def __init__(self, options: dict):
+        timeout = options.get("timeout")
         if timeout is None or timeout <= 0:
             timeout = 10
         self.timeout = timeout
         self.download_dir = Path(setting_get("download_output"))
-        self.options = kwargs
+        self.options = options
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--mute-audio")
         chrome_options.add_argument("--incognito")

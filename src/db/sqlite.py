@@ -32,14 +32,15 @@ class Sqlite3Record(object):
         sqlite_locker.release()
 
     @staticmethod
-    def acquire(db: str = None) -> Sqlite3Record:
+    def acquire(options: dict) -> Sqlite3Record:
         sqlite_locker.acquire()
         if Sqlite3Record.__instance is not None:
             sqlite_locker.release()
             return Sqlite3Record.__instance
         Sqlite3Record.__instance = Sqlite3Record()
-        if db is None:
-            db = setting_get("db")
+        Sqlite3Record.__instance.options = options
+
+        db = options.get("db", "mediaxz.db")
         Sqlite3Record.__instance.__db = sqlite3.connect(database=db, timeout=3)
         sqlite_locker.release()
         return Sqlite3Record.__instance
