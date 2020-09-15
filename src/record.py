@@ -72,7 +72,7 @@ class Recoder(object):
         return self.__recorder.queue_channel.put(item)
 
     def load_dump(self) -> int:
-        download_dir = Path(setting_get("download_output"))
+        download_dir = Path(self.__recorder.options.get("output"))
         dumpfile = download_dir.joinpath("__index.json")
         if not download_dir.exists() or not dumpfile.exists():
             return 0
@@ -85,7 +85,7 @@ class Recoder(object):
             return 0
 
     def reset_dump(self, current_cursor: int) -> bool:
-        download_dir = Path(setting_get("download_output"))
+        download_dir = Path(self.__recorder.options.get("output"))
         if not download_dir.exists():
             download_dir.mkdir(mode=644, parents=True)
         dumpfile = download_dir.joinpath("__index.json")
@@ -95,7 +95,7 @@ class Recoder(object):
         return True
 
     def export_json(self):
-        download_dir = Path(setting_get("download_output"))
+        download_dir = Path(self.__recorder.options.get("output"))
         if not download_dir.exists():
             download_dir.mkdir(mode=644, parents=True)
         abs_file = download_dir.joinpath("videos.json")

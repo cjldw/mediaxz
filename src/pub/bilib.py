@@ -39,8 +39,9 @@ class BiliB(object):
         timeout = options.get("timeout")
         if timeout is None or timeout <= 0:
             timeout = 10
+        self.options = options
         self.timeout = timeout
-        self.download_dir = Path(setting_get("download_output"))
+        self.download_dir = Path(options.get("output"))
         self.options = options
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--mute-audio")

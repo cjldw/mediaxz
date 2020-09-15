@@ -28,7 +28,7 @@ class Download(Thread):
     def __init__(self, queue: Queue, **kwargs):
         super().__init__(**kwargs)
         self.queue: Queue = queue
-        self.download_dir = setting_get("download_output")
+        self.download_dir = setting_get("output")
 
     def run(self) -> None:
         while True:

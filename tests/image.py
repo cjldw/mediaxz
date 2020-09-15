@@ -6,6 +6,8 @@
 
 from PIL import ImageFont, ImageDraw, Image
 
+from .URL import a
+
 
 def image():
     with open("../output/fc68997c9c27b1a47ff7a9c0e9b9dc1d.jpg", mode="rb") as fd:
@@ -24,6 +26,10 @@ def image():
         img2 = Image.new(mode="RGB", size=(960, 600), color="white")
         img2.paste(corp_img, (offset_x, 0))
         img2.save("xx.jpg")
+
+
+def xx():
+    print(a)
 
 
 if __name__ == '__main__':

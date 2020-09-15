@@ -6,13 +6,17 @@
 
 import unittest
 
-
 from src.util import remove_emoji
+
+from .URL import a
+from .image import xx
 
 
 class TestRecord(unittest.TestCase):
 
     def test_export_json(self):
-        txt = "瞄瞄， 伙就是😆"
-        print(txt)
-        print(remove_emoji(txt))
+        a.update({"age": 32})
+        self.test_xx()
+
+    def test_xx(self):
+        xx()

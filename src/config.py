@@ -9,7 +9,7 @@ from typing import Any, Optional, Union
 configs = {
     "queue_size": 10000,
     "download_thread_num": 3,
-    "download_output": "./output",
+    "output": "./output",
     "timeout": 5,
 }
 

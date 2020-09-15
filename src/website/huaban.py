@@ -17,6 +17,7 @@ from queue import Queue
 from urllib.parse import urlparse, ParseResult
 from src.website.browser import Browser
 from src.models.image import ImageItem
+from src.db.huaban_image_db import HuaBanDb
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -37,7 +38,9 @@ class HuaBan(Browser):
     class Downloader(Thread):
         daemon = True
 
-        def __init__(self, download_queue: Queue, record_queue: Queue, output: str = "./output/images", **kwargs):
+        def __init__(self, download_queue: Queue, record_queue: Queue, output: str, **kwargs):
+            if len(output) <= 0:
+                raise ValueError("download output directory not setting")
             self.download_queue = download_queue
             self.record_queue = record_queue
             self.output = Path(output)
@@ -68,14 +71,16 @@ class HuaBan(Browser):
     class Recorder(Thread):
         daemon = True
 
-        def __init__(self, queue: Queue, **kwargs):
+        def __init__(self, queue: Queue, options: dict, **kwargs):
             super().__init__(**kwargs)
+            self.options = options
+            self.database = HuaBanDb(options)
             self.queue = queue
 
         def run(self) -> None:
             while True:
                 item: ImageItem = self.queue.get()
-
+                self.database.record(item)  # record to database
                 self.queue.task_done()
 
     def __init__(self, options: dict):
@@ -86,14 +91,16 @@ class HuaBan(Browser):
         self.record_queue = Queue(queue_size)
         download_thread_num = options.get("download_thread_num", 3)
         for index in range(download_thread_num):  # start download threading
-            download_thread = self.Downloader(self.download_queue, self.record_queue, daemon=True, name="downloader")
+            download_thread = self.Downloader(self.download_queue, self.record_queue, output=options.get("output", ""),
+                                              daemon=True, name="downloader")
             download_thread.start()
-        record_thread = self.Recorder(self.record_queue, daemon=True, name="recorder")
+        record_thread = self.Recorder(self.record_queue, options, daemon=True, name="recorder")
         record_thread.start()
 
     def crawl(self):
         try:
             self.explorer()
+            self.built_videos()
         except Exception as e:
             logger.error("huaban explorer failure, err: {}".format(e.args))
         finally:

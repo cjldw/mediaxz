@@ -12,6 +12,10 @@ import shutil
 
 from datetime import datetime
 
+a = {
+    "luowen": "haha",
+}
+
 
 def main():
     url = "//hbimg.huabanimg.com/5405ea81d6912d96adbf866438317c8f1a27cf844b38c-i64GS2_fw236/format/webp?r=23&a=111"
