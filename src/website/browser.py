@@ -26,6 +26,7 @@ class Browser(object):
             chrome_options.headless = True
         self.timeout = options.get("timeout", 10)
         self.browser = Chrome(chrome_options=chrome_options)
+        self.browser.maximize_window()
         self.options = options
 
     def tab_close(self, tab: str):

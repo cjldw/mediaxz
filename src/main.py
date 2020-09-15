@@ -30,7 +30,7 @@ def download(**kwargs):
     configs.update(kwargs)
     factory = CrawlFactory(configs).crawl()
     if not factory.crawl():
-        logger.error("crawl https://webo.cn failure")
+        logger.error("crawl [{}] failure".format(factory.name))
         return False
     return True
 

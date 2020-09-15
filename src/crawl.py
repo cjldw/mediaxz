@@ -5,6 +5,7 @@
 # desc: crawl
 
 from src.website.weib import WeiB
+from src.website.huaban import HuaBan
 
 
 class CrawlFactory(object):
@@ -17,3 +18,5 @@ class CrawlFactory(object):
             raise ValueError("clazz not configuration")
         if clazz == WeiB.name:
             return WeiB(self.options)
+        if clazz == HuaBan.name:
+            return HuaBan(self.options)

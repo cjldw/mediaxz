@@ -17,7 +17,7 @@ class TestHuaBanDb(unittest.TestCase):
 
     def test_record(self):
         url = "//hbimg.huabanimg.com/5405ea81d6912d96adbf866438317c8f1a27cf844b38c-i64GS2_fw236/format/webp"
-        data = ImageItem(url=url, width=200, height=400, hash="luwoen")
+        data = ImageItem(url=url, width=200, height=400, hash_code="luwoen")
         self.db.record(data)
 
     def test_exists(self):

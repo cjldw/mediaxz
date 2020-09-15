@@ -8,11 +8,11 @@
 
 class ImageItem(object):
 
-    def __init__(self, url: str, width: int, height: int, hash: str = None):
+    def __init__(self, url: str, width: int = 0, height: int = 0, hash_code: str = None):
         self.url = url
         self.width = width
         self.height = height
-        self.hash = hash
+        self.hash = hash_code
 
     def __str__(self) -> str:
         return "url: {}, width: {}, height:{} hash: ".format(self.url, self.width, self.height, self.hash)

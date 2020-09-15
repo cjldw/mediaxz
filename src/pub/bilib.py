@@ -76,6 +76,8 @@ class BiliB(object):
         for item in videos_ups:
             try:
                 self.browser.get(self.pub_url)
+                time.sleep(3)
+                self.browser.refresh()
                 time.sleep(2)
                 code = item.get("code", "")
                 abs_mp4file = self.download_dir.joinpath(code + ".mp4")
