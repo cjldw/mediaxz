@@ -5,8 +5,9 @@
 # desc:
 
 from PIL import ImageFont, ImageDraw, Image
-
-from .URL import a
+from pathlib import Path
+import shutil
+import glob
 
 
 def image():
@@ -28,9 +29,12 @@ def image():
         img2.save("xx.jpg")
 
 
-def xx():
-    print(a)
+def rename():
+    files = glob.glob("../output/huaban/*")
+    for index in range(len(files)):
+        file_path = Path(files[index])
+        file_path.rename(Path(file_path.parent).joinpath("{}.jpg".format(index)))
 
 
 if __name__ == '__main__':
-    image()
+    rename()

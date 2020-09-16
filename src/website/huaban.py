@@ -8,7 +8,7 @@
 import time
 import logging
 import requests
-
+import re
 import hashlib
 import shutil
 from typing import List
@@ -54,7 +54,7 @@ class HuaBan(Browser):
                 parse_result: ParseResult = urlparse(item.url)
                 item.url: str = "{}://{}{}?{}".format(parse_result.scheme if len(parse_result) > 0 else "https",
                                                       parse_result.netloc, parse_result.path, parse_result.query)
-                logger.info("download thread: fetch {}".format(item.url))
+                logger.info("download thread {}: fetch {}".format(self.getName(), item.url))
                 download_img_resp = requests.get(item.url, stream=True)
                 self.download_queue.task_done()  # 就下载一次了
                 if download_img_resp.status_code != 200:
@@ -64,7 +64,7 @@ class HuaBan(Browser):
                 try:
                     img_hash: str = hashlib.md5(item.url.encode("utf-8")).hexdigest()
                     item.hash = img_hash
-                    abs_file = self.output.joinpath(img_hash + ".webp")
+                    abs_file = self.output.joinpath(img_hash + ".jpg")
                     with open(abs_file, "wb") as out_file:
                         shutil.copyfileobj(download_img_resp.raw, out_file)
                     del download_img_resp
@@ -84,6 +84,7 @@ class HuaBan(Browser):
         def run(self) -> None:
             while True:
                 item: ImageItem = self.queue.get()
+                logger.info("record to sqlite3 db: {}".format(item.url))
                 self.database.record(item)  # record to database
                 self.queue.task_done()
 
@@ -96,7 +97,7 @@ class HuaBan(Browser):
         download_thread_num = options.get("download_thread_num", 3)
         for index in range(download_thread_num):  # start download threading
             download_thread = self.Downloader(self.download_queue, self.record_queue, output=options.get("output", ""),
-                                              daemon=True, name="downloader")
+                                              daemon=True, name="downloader-{}".format(index))
             download_thread.start()
             logger.info("start download thread name: {}".format(download_thread.getName()))
         record_thread = self.Recorder(self.record_queue, options, daemon=True, name="recorder")
@@ -127,7 +128,7 @@ class HuaBan(Browser):
             logger.info("cursor: {} times: {} mark as completed".format(cursor, times))
             return
         self.browser.execute_script("window.scrollBy(0, 500)")
-        time.sleep(5)
+        time.sleep(3)
         flow_boxes: List[WebElement] = WebDriverWait(self.browser, self.timeout).until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".pin.wfc"))
         )
@@ -141,8 +142,10 @@ class HuaBan(Browser):
             try:
                 imgbox: WebElement = flow_box.find_element_by_css_selector(".img.x.layer-view img")
                 http_url: str = imgbox.get_attribute("src")
-                item: ImageItem = ImageItem(url=http_url)
-                self.download_queue.put(item)
+                url = re.sub(r'_fw\d+', "_fw1000", http_url).replace("/webp", "/jpeg")
+                logger.info("get image url: {}".format(url))
+                image_item = ImageItem(url=url)
+                self.download_queue.put(image_item)
             except Exception as e:
                 logger.error("find img address failure, err: {}".format(e.args))
                 continue
@@ -173,8 +176,9 @@ class HuaBan(Browser):
                 self.download_sub(cursor, retry_times + 1)
             for image in sub_img_boxes[cursor: image_length]:
                 image_url: str = image.get_attribute("src")
-                image_item = ImageItem(url=image_url.replace("_fw236", "_fw860"))
-                logger.info("get image url: {}".format(image_url.replace("_fw86", "_fw860")))
+                url = re.sub(r'_fw\d+', "_fw1000", image_url).replace("/webp", "jpeg")
+                image_item = ImageItem(url=url)
+                logger.info("get image url: {}".format(url))
                 self.download_queue.put(image_item)
             return None
             # self.download_sub(image_length, 0)

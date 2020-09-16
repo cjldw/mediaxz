@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 class HuaBanDb(Sqlite3Record):
 
     def record(self, image: ImageItem) -> None:
-        return None
         cursor: Cursor = self.database.cursor()
         sql = "insert into images (url, width, height, hash, created_date) values (?, ?, ?, ?, ?)"
         cursor.execute(sql, (image.url, image.width, image.height, image.hash, time.strftime("%Y-%m-%d %H:%M:%S"),))
