@@ -8,6 +8,7 @@ __pycache__/
 
 build/
 *.log
+*.bak
 *.jpg
 *.mp3
 *.mp4

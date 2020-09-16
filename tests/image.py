@@ -7,6 +7,7 @@
 from PIL import ImageFont, ImageDraw, Image
 from pathlib import Path
 import shutil
+import click
 import glob
 
 
@@ -37,4 +38,8 @@ def rename():
 
 
 if __name__ == '__main__':
-    rename()
+    value = click.prompt("Please input a valid integer value: ", type=int)
+    print(value)
+
+    if click.confirm("Do you want continue?", prompt_suffix="😀", show_default=True, abort=False):
+        click.echo("hehe, you sb")
