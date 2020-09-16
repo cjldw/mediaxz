@@ -1,11 +1,14 @@
 .idea
 venv
 pychache
-*.log
-output/
+output/*
+!videos.json
+!__index.json
 __pycache__/
 
 build/
+*.log
 *.jpg
+*.mp3
 *.mp4
 *.png
