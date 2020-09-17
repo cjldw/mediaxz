@@ -31,15 +31,29 @@ def image():
 
 
 def rename():
-    files = glob.glob("../output/huaban/*")
+    files = glob.glob("../dist/output/huaban/*")
     for index in range(len(files)):
         file_path = Path(files[index])
         file_path.rename(Path(file_path.parent).joinpath("{}.jpg".format(index)))
 
 
-if __name__ == '__main__':
-    value = click.prompt("Please input a valid integer value: ", type=int)
-    print(value)
+def ok() -> bool:
+    try:
+        print(111)
+        raise ValueError("not int")
+    except ValueError as e:
+        print("err: {}".format(e.args))
+        return False
+    finally:
+        print("finally")
 
-    if click.confirm("Do you want continue?", prompt_suffix="😀", show_default=True, abort=False):
-        click.echo("hehe, you sb")
+
+if __name__ == '__main__':
+    rename()
+    a = ok()
+    print(a)
+    # value = click.prompt("Please input a valid integer value: ", type=int)
+    # print(value)
+    #
+    # if click.confirm("Do you want continue?", prompt_suffix="😀", show_default=True, abort=False):
+    #     click.echo("hehe, you sb")

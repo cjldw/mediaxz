@@ -22,9 +22,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebElement
-from selenium.webdriver.common.action_chains import ActionChains
 from threading import Thread
 
 logger = logging.getLogger(__name__)
@@ -38,7 +36,7 @@ class HuaBan(Browser):
     class Downloader(Thread):
         daemon = True
 
-        def __init__(self, download_queue: Queue, record_queue: Queue, output: str, **kwargs):
+        def __init__(self, download_queue: Queue, output: str, **kwargs):
             if len(output) <= 0:
                 raise ValueError("download output directory not setting")
             self.download_queue = download_queue
@@ -96,7 +94,7 @@ class HuaBan(Browser):
         # self.record_queue = Queue(queue_size)
         download_thread_num = options.get("download_thread_num", 3)
         for index in range(download_thread_num):  # start download threading
-            download_thread = self.Downloader(self.download_queue, self.record_queue, output=options.get("output", ""),
+            download_thread = self.Downloader(self.download_queue, output=options.get("output", ""),
                                               daemon=True, name="downloader-{}".format(index))
             download_thread.start()
             logger.info("start download thread name: {}".format(download_thread.getName()))
@@ -111,8 +109,10 @@ class HuaBan(Browser):
             self.explorer()
             self.built_videos()
             self.close()
+            return True
         except Exception as e:
-            logger.error("huaban explorer failure, err: {}".format(e.args))
+            logger.error("huaban explorer failure, err: {}".format(e.args[-1]))
+            return False
         finally:
             logger.info("record queue completed")
 
@@ -148,7 +148,11 @@ class HuaBan(Browser):
                 height: int = int(imgbox.get_attribute("height"))
                 url = re.sub(r'_fw\d+', "_fw1000", http_url).replace("/webp", "/jpeg")
                 logger.info("get image url: {}".format(url))
-                image_item = ImageItem(url=url, width=width, height=height)
+                hash_code = hashlib.md5(url.encode("utf-8")).hexdigest()
+                if self.record_db.exists(hash_code):
+                    logger.info("image: {} download before skip it.".format(url))
+                    continue
+                image_item = ImageItem(url=url, width=width, height=height, hash_code=hash_code)
                 self.record_db.record(image_item)
                 self.download_queue.put(image_item)
             except Exception as e:
@@ -193,9 +197,6 @@ class HuaBan(Browser):
         except Exception as e:
             logger.error("download subset image not success. {}".format(e.with_traceback(None)))
             self.download_sub(cursor, retry_times + 1)
-
-    def built_videos(self):
-        pass
 
     def close(self):
         for handler in self.tabs:

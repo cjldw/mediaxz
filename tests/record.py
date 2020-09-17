@@ -6,10 +6,12 @@
 
 import unittest
 
+import shutil
+
+from pathlib import Path
 from src.util import remove_emoji
 
 from .URL import a
-from .image import xx
 
 
 class TestRecord(unittest.TestCase):
@@ -19,4 +21,7 @@ class TestRecord(unittest.TestCase):
         self.test_xx()
 
     def test_xx(self):
-        xx()
+        src = Path("tests/test.mp4")
+
+        # Path(src.parent).joinpath("tmp").mkdir(mode=664)
+        shutil.move(src, Path(src.parent).joinpath("tmp", src.name))
