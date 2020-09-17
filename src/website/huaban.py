@@ -42,7 +42,7 @@ class HuaBan(Browser):
             if len(output) <= 0:
                 raise ValueError("download output directory not setting")
             self.download_queue = download_queue
-            self.record_queue = record_queue
+            # self.record_queue = record_queue
             self.output = Path(output)
             if not self.output.exists():
                 self.output.mkdir(644, parents=True)
@@ -68,7 +68,7 @@ class HuaBan(Browser):
                     with open(abs_file, "wb") as out_file:
                         shutil.copyfileobj(download_img_resp.raw, out_file)
                     del download_img_resp
-                    self.record_queue.put(item)
+                    # self.record_queue.put(item)
                 except Exception as e:
                     logger.error("failure error: {}".format(e))
 
@@ -93,16 +93,18 @@ class HuaBan(Browser):
         queue_size = options.get("queue_size", 1000)
         self.max_count = options.get("count", 1000)
         self.download_queue = Queue(queue_size)
-        self.record_queue = Queue(queue_size)
+        # self.record_queue = Queue(queue_size)
         download_thread_num = options.get("download_thread_num", 3)
         for index in range(download_thread_num):  # start download threading
             download_thread = self.Downloader(self.download_queue, self.record_queue, output=options.get("output", ""),
                                               daemon=True, name="downloader-{}".format(index))
             download_thread.start()
             logger.info("start download thread name: {}".format(download_thread.getName()))
-        record_thread = self.Recorder(self.record_queue, options, daemon=True, name="recorder")
-        record_thread.start()
-        logger.info("start record thread name: {}".format(record_thread.getName()))
+
+        self.record_db = HuaBanDb(options)
+        # record_thread = self.Recorder(self.record_queue, options, daemon=True, name="recorder")
+        # record_thread.start()
+        # logger.info("start record thread name: {}".format(record_thread.getName()))
 
     def crawl(self):
         try:
@@ -120,7 +122,7 @@ class HuaBan(Browser):
             self.scrolling(0)
         finally:
             self.download_queue.join()
-            self.record_queue.join()
+            # self.record_queue.join()
             logger.info("download, record threading completed")
 
     def scrolling(self, cursor: int = 0, times: int = 0) -> None:
@@ -142,9 +144,12 @@ class HuaBan(Browser):
             try:
                 imgbox: WebElement = flow_box.find_element_by_css_selector(".img.x.layer-view img")
                 http_url: str = imgbox.get_attribute("src")
+                width: int = int(imgbox.get_attribute("width"))
+                height: int = int(imgbox.get_attribute("height"))
                 url = re.sub(r'_fw\d+', "_fw1000", http_url).replace("/webp", "/jpeg")
                 logger.info("get image url: {}".format(url))
-                image_item = ImageItem(url=url)
+                image_item = ImageItem(url=url, width=width, height=height)
+                self.record_db.record(image_item)
                 self.download_queue.put(image_item)
             except Exception as e:
                 logger.error("find img address failure, err: {}".format(e.args))
