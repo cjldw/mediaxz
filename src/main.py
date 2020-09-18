@@ -62,7 +62,7 @@ def img2video(**kwargs):
         result = video_builder.built()
         logger.info("video build status: {}".format(result))
     except Exception as e:
-        logger.error("video builder failure, err: {}".format(traceback.print_stack()))
+        logger.error("video builder failure, err: {}".format(e.args))
     finally:
         logger.info("video build completed")
 

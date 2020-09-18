@@ -40,7 +40,7 @@ class HuaBanDb(Sqlite3Record):
 
     def record_max_id(self, image_id: int) -> bool:
         cursor: Cursor = self.database.cursor()
-        cursor.execute("insert into image_record_index (last_index, created_date) values (?, ?)",
+        cursor.execute("insert into image_record_index (record_index, created_date) values (?, ?)",
                        (image_id, time.strftime("%Y-%m-%d %H:%M:%S"),))
         self.database.commit()
         affected_row = cursor.rowcount

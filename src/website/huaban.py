@@ -106,8 +106,8 @@ class HuaBan(Browser):
 
     def crawl(self):
         try:
+
             self.explorer()
-            self.built_videos()
             self.close()
             return True
         except Exception as e:
@@ -118,6 +118,7 @@ class HuaBan(Browser):
 
     def explorer(self):
         try:
+            self.last_index_record()
             self.browser.get(self.url)
             self.scrolling(0)
         finally:
@@ -126,6 +127,9 @@ class HuaBan(Browser):
             logger.info("download, record threading completed")
 
     def scrolling(self, cursor: int = 0, times: int = 0) -> None:
+        if cursor > self.max_count:
+            logger.info("crawler arrive user's target.")
+            return
         if times >= 3:
             logger.info("cursor: {} times: {} mark as completed".format(cursor, times))
             return
@@ -140,7 +144,8 @@ class HuaBan(Browser):
             self.scrolling(cursor, times + 1)
             return
 
-        for flow_box in flow_boxes[cursor:]:  # explain target ImageItem data and dispatch
+        logger.info("flow boxes length: {}".format(len(flow_boxes)))
+        for flow_box in flow_boxes:  # explain target ImageItem data and dispatch
             try:
                 imgbox: WebElement = flow_box.find_element_by_css_selector(".img.x.layer-view img")
                 http_url: str = imgbox.get_attribute("src")
@@ -149,27 +154,18 @@ class HuaBan(Browser):
                 url = re.sub(r'_fw\d+', "_fw1000", http_url).replace("/webp", "/jpeg")
                 logger.info("get image url: {}".format(url))
                 hash_code = hashlib.md5(url.encode("utf-8")).hexdigest()
-                if self.record_db.exists(hash_code):
-                    logger.info("image: {} download before skip it.".format(url))
-                    continue
+                # if self.record_db.exists(hash_code):
+                #     logger.info("image: {} download before skip it.".format(url))
+                #     continue
                 image_item = ImageItem(url=url, width=width, height=height, hash_code=hash_code)
-                self.record_db.record(image_item)
+                # self.record_db.record(image_item)
                 self.download_queue.put(image_item)
             except Exception as e:
                 logger.error("find img address failure, err: {}".format(e.args))
                 continue
-        # self.tab_switch("index_page")
-        # img_box_element: WebElement = flow_box.find_element_by_css_selector(".img.x.layer-view.loaded")
-        # img_box_element.send_keys(Keys.CONTROL, Keys.RETURN)
-        # self.tab_switch(img_box_element.id)
-        # self.download_sub(0)
-        # self.tab_close(img_box_element.id)
-        # if cursor >= self.max_count:
-        #     logger.info("arrive crawl target count")
-        #     return None
-        cursor = element_length
+        cursor += element_length
         logger.info("current num: {} scroll to next page".format(cursor))
-        self.scrolling(cursor)
+        self.scrolling(cursor, 0)
 
     def download_sub(self, cursor: int = 0, retry_times: int = 0) -> None:
         try:
@@ -197,6 +193,11 @@ class HuaBan(Browser):
         except Exception as e:
             logger.error("download subset image not success. {}".format(e.with_traceback(None)))
             self.download_sub(cursor, retry_times + 1)
+
+    def last_index_record(self) -> bool:
+        if not self.record_db.record_max_id(self.record_db.max_id()):
+            raise RuntimeError("record last max index failure")
+        return True
 
     def close(self):
         for handler in self.tabs:

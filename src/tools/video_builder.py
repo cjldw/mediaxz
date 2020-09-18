@@ -25,18 +25,20 @@ class VideoBuilder(object):
         self.output = options.get("output", "output.mp4")
 
     def built(self):
-        if not Path(self.source).exists() or not self.bgm:
+        if not Path(self.source).exists():
             raise ValueError("images source must settings")
         bgm_file = self.get_bgm()
-        print(bgm_file.absolute())
-        prob = ffmpeg.probe(bgm_file.absolute())
+        prob = ffmpeg.probe(str(bgm_file.absolute()))
         bgm_file_info = next((stream for stream in prob["streams"] if stream['codec_type'] == "audio"), None)
         logger.info("background music information: {}".format(bgm_file_info))
         bgm_file_duration = float(bgm_file_info["duration"])
+
         if bgm_file_duration <= 0:
             raise ValueError("background music invalid, for duration zero")
-        video_images_num = int(bgm_file_duration) * self.rate
+        video_images_num = int(bgm_file_duration * self.rate)
         video_file: Path = self.video(video_images_num)
+        self.merge_bgm(video_file, bgm_file)
+        return True
 
     def get_bgm(self) -> Path:
         bgm = Path(self.bgm)
@@ -56,10 +58,11 @@ class VideoBuilder(object):
         for index, image in zip(range(num), image_files[:num]):
             if not tmp_dir.exists():
                 tmp_dir.mkdir(mode=644, parents=True)
-            shutil.move(str(image), tmp_dir.joinpath("{}.{}".format(index, image.suffix)))
+            shutil.move(str(image), tmp_dir.joinpath("{}{}".format(index, image.suffix)))
         ffmpeg.input("{}/%d.jpg".format(str(tmp_dir.absolute())), framerate=0.4, format="image2").output(
             self.output).run()
         return Path(self.output)
 
     def merge_bgm(self, video: Path, audio: Path) -> bool:
-        pass
+        ffmpeg.overwrite_output().concat(ffmpeg.input(str(video)), ffmpeg.input(str(audio))).output(str(video)).run()
+        return True

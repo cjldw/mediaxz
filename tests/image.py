@@ -4,6 +4,7 @@
 # time: 2018/9/29 21:41
 # desc:
 
+import ffmpeg
 from PIL import ImageFont, ImageDraw, Image
 from pathlib import Path
 import shutil
@@ -31,10 +32,10 @@ def image():
 
 
 def rename():
-    files = glob.glob("../dist/output/huaban/*")
+    files = glob.glob("../dist/output/huaban/tmp/*")
     for index in range(len(files)):
         file_path = Path(files[index])
-        file_path.rename(Path(file_path.parent).joinpath("{}.jpg".format(index)))
+        file_path.rename(Path(file_path.parent).joinpath("a{}.jpg".format(index)))
 
 
 def ok() -> bool:
@@ -48,10 +49,21 @@ def ok() -> bool:
         print("finally")
 
 
+def merge():
+    s = ffmpeg.concat(
+        ffmpeg.input("../dist/test/1.mp3"),
+        ffmpeg.input("../dist/test/2.mp4"),
+    )
+    s1 = ffmpeg.output(s, "xx.mp4")
+    ffmpeg.run(s1)
+    # ffmpeg.output(filename="demo.mp4", codec="copy").run()
+
+
 if __name__ == '__main__':
-    rename()
-    a = ok()
-    print(a)
+    # rename()
+    merge()
+    # a = ok()
+    # print(a)
     # value = click.prompt("Please input a valid integer value: ", type=int)
     # print(value)
     #

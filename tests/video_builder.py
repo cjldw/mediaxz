@@ -21,6 +21,7 @@ class TestVideoBuilder(unittest.TestCase):
         self.video_builder.built()
 
     def test_video_info(self):
-        prob = ffmpeg.probe(Path(self.video_builder.bgm).absolute())
+        # prob = ffmpeg.probe(Path(self.video_builder.bgm).absolute())
+        prob = ffmpeg.probe(str(Path("../dist/bgm/beatifully.ape").absolute()))
         bgm_file_info = next((stream for stream in prob["streams"] if stream['codec_type'] == "audio"), None)
         print(bgm_file_info)
