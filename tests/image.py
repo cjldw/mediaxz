@@ -5,6 +5,7 @@
 # desc:
 
 import ffmpeg
+import traceback
 from PIL import ImageFont, ImageDraw, Image
 from pathlib import Path
 import shutil
@@ -35,7 +36,7 @@ def rename():
     files = glob.glob("../dist/output/huaban/tmp/*")
     for index in range(len(files)):
         file_path = Path(files[index])
-        file_path.rename(Path(file_path.parent).joinpath("a{}.jpg".format(index)))
+        file_path.rename(Path(file_path.parent).joinpath("c9_{}.jpg".format(index)))
 
 
 def ok() -> bool:
@@ -43,25 +44,57 @@ def ok() -> bool:
         print(111)
         raise ValueError("not int")
     except ValueError as e:
-        print("err: {}".format(e.args))
+        traceback.print_list()
         return False
     finally:
         print("finally")
 
 
+def video_mk():
+    tmp_dir = Path("../dist/output/huaban/tmp")
+    output = tmp_dir.joinpath("__tmp.mp4")
+    ffmpeg.input("{}/%d.jpg".format(str(tmp_dir.absolute())), framerate=1, format="image2").output(
+        filename=str(output)).overwrite_output().run()
+
+
+def bgm_merge():
+    audio = ffmpeg.input("../dist/test/1.mp3")
+    ffmpeg.input("../dist/output/huaban/tmp/__tmp.mp4").output(audio, "merge.mp4", vcodec="copy", shortest=None).run()
+
+
 def merge():
     s = ffmpeg.concat(
-        ffmpeg.input("../dist/test/1.mp3"),
+        ffmpeg.input("../dist/test/3.mp4"),
         ffmpeg.input("../dist/test/2.mp4"),
+        n=2,
+        v=1,
+        a=1,
     )
-    s1 = ffmpeg.output(s, "xx.mp4")
-    ffmpeg.run(s1)
+    audio2 = ffmpeg.input("../dist/test/2.ape")
+    audio1 = ffmpeg.input("../dist/test/1.mp3") \
+        # .filter("join", inputs=2, channel_layout="stereo").output( "333.mp3").run()
+    ffmpeg.filter((audio2, audio1), "join", inputs=2, channel_layout="stereo").output(
+        "xxx.mp3").overwrite_output().run()
+    # audio = ffmpeg.input("../dist/test/1.mp3")
+    # video = ffmpeg.input("../dist/test/3.mp4")
+    # ffmpeg.filter((audio,), 'join', inputs=1, channel_layout="stereo") \
+    #     .output(video.video, "xxx.mp4", shortest=None, vcodec="copy").overwrite_output()
+    # ffmpeg.input("../dist/test/3.mp4").output(ffmpeg.input("../dist/test/1.mp3"), "./output.mp4", shortest=None,
+    #                                           vcodec="copy").overwrite_output().run()
+
+    # ffmpeg.filter((ffmpeg.input("../dist/test/1.mp3"),), 'join', inputs=1).output(
+    #     ffmpeg.input("../dist/test/3.mp4").video,
+    #     "output.mp4", vcodec="copy").run()
+    # print("xx")
     # ffmpeg.output(filename="demo.mp4", codec="copy").run()
 
 
 if __name__ == '__main__':
-    # rename()
-    merge()
+    # bgm_merge()
+    # video_mk()
+    rename()
+    # merge()
+    # a = ok()
     # a = ok()
     # print(a)
     # value = click.prompt("Please input a valid integer value: ", type=int)

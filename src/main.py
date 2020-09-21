@@ -53,16 +53,16 @@ def upload(**kwargs) -> bool:
 @entrance.command()
 @click.option("--source", default=None, help="the images directory")
 @click.option("--bgm", default=None, help="the video background music")
-@click.option("--rate", default=0.5, help="the rate of video to generate")
+@click.option("--framerate", default=0.5, help="the framerate of video to generate")
 @click.option("--output", default="output.mp4", help="video name for generate")
-def img2video(**kwargs):
+def video_built(**kwargs):
     configs.update(kwargs)
     video_builder = VideoBuilder(configs)
     try:
         result = video_builder.built()
         logger.info("video build status: {}".format(result))
     except Exception as e:
-        logger.error("video builder failure, err: {}".format(e.args))
+        logger.error("video builder failure, err: {}".format("".join(traceback.extract_stack())))
     finally:
         logger.info("video build completed")
 

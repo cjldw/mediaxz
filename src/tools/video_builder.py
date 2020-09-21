@@ -6,6 +6,7 @@
 # @time: 9/17/2020 10:18 PM
 
 import logging
+import time
 import ffmpeg
 import shutil
 import random
@@ -21,7 +22,7 @@ class VideoBuilder(object):
         self.options = options
         self.bgm = options.get("bgm", None)
         self.source = options.get("source", None)
-        self.rate = options.get("rate", 0.5)
+        self.framerate = options.get("framerate", 0.5)
         self.output = options.get("output", "output.mp4")
 
     def built(self):
@@ -35,7 +36,7 @@ class VideoBuilder(object):
 
         if bgm_file_duration <= 0:
             raise ValueError("background music invalid, for duration zero")
-        video_images_num = int(bgm_file_duration * self.rate)
+        video_images_num = int(bgm_file_duration * self.framerate)
         video_file: Path = self.video(video_images_num)
         self.merge_bgm(video_file, bgm_file)
         return True
@@ -48,21 +49,24 @@ class VideoBuilder(object):
         if len(files) <= 0:
             raise FileNotFoundError("music file not found")
         index = random.randint(0, len(files))
-        return files[index]
+        return files[index - 1]
 
     def video(self, num: int) -> Path:
         image_files: List[Path] = [file for file in Path(self.source).iterdir() if file.is_file()]
         if num > len(image_files):
             raise ValueError("image numbers not enough")
         tmp_dir = Path(self.source).joinpath("tmp")
+        if tmp_dir.exists():
+            shutil.move(tmp_dir, Path(self.source).joinpath("tmp-{}".format(time.strftime("%Y%m%d%H%M%S"))))
+        tmp_dir.mkdir(mode=644, parents=True)
         for index, image in zip(range(num), image_files[:num]):
-            if not tmp_dir.exists():
-                tmp_dir.mkdir(mode=644, parents=True)
             shutil.move(str(image), tmp_dir.joinpath("{}{}".format(index, image.suffix)))
-        ffmpeg.input("{}/%d.jpg".format(str(tmp_dir.absolute())), framerate=0.4, format="image2").output(
-            self.output).run()
-        return Path(self.output)
+        output = tmp_dir.joinpath("__tmp.mp4")
+        ffmpeg.input("{}/%d.jpg".format(str(tmp_dir.absolute())), framerate=self.framerate, format="image2").output(
+            filename=str(output)).overwrite_output().run()
+        return Path(output)
 
     def merge_bgm(self, video: Path, audio: Path) -> bool:
-        ffmpeg.overwrite_output().concat(ffmpeg.input(str(video)), ffmpeg.input(str(audio))).output(str(video)).run()
+        ffmpeg.input(filename=str(video.absolute())).output(ffmpeg.input(str(audio)).audio, self.output, vcodec="copy",
+                                                            shortest=None).overwrite_output().run()
         return True
