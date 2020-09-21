@@ -55,7 +55,7 @@ def upload(**kwargs) -> bool:
 @click.option("--bgm", default=None, help="the video background music")
 @click.option("--framerate", default=0.5, help="the framerate of video to generate")
 @click.option("--output", default="output.mp4", help="video name for generate")
-def video_built(**kwargs):
+def vpkg(**kwargs):
     configs.update(kwargs)
     video_builder = VideoBuilder(configs)
     try:
