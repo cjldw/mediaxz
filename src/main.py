@@ -12,6 +12,7 @@ from src.crawl import CrawlFactory
 from src.logs import config_logging
 from src.pub.bilib import BiliB
 from src.config import configs
+from src.pub.stream_live import StreamLive
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,16 @@ def vpkg(**kwargs):
         logger.error("video builder failure, err: {}".format("".join(traceback.extract_stack())))
     finally:
         logger.info("video build completed")
+
+
+@entrance.command()
+@click.option("--url", default="", help="upstream address")
+@click.option("--source", default=None, help="local video file")
+@click.option("--db", default="./live.db", help="database of live")
+@click.option("--daemon", default=False, type=click.BOOL, help="run forever or not")
+def live(**kwargs):
+    stream_live = StreamLive(kwargs)
+    stream_live.live(0)
 
 
 def launch():
