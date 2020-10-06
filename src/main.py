@@ -69,7 +69,10 @@ def vpkg(**kwargs):
 
 
 @entrance.command()
-@click.option("--url", default="", help="upstream address")
+@click.option("--url",
+              default="rtmp://live-push.bilivideo.com/live-bvc/?streamname=live_505797972_44307093&key" +
+                      "=69f49942956030afd257668fee1f5497&schedule=rtmp",
+              help="upstream address")
 @click.option("--source", default=None, help="local video file")
 @click.option("--db", default="./live.db", help="database of live")
 @click.option("--daemon", default=False, type=click.BOOL, help="run forever or not")

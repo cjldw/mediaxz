@@ -14,7 +14,7 @@ import time
 from typing import List, Any, Optional, Dict
 from PIL import Image
 from pathlib import Path
-from src.config import setting_get
+from src.tools.title_builder import title_gen
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
@@ -116,7 +116,7 @@ class BiliB(object):
                              ".copyright-v2-source-input-wrp .input-box-v2-1-container .input-box-v2-1-instance input")
                         )
                     )
-                    from_text_element.send_keys(item.get("href", "微博"))
+                    from_text_element.send_keys("转载：{}".format(item.get("href", "微博")))
                 self.browser.execute_script("window.scrollBy(0, 100)")
                 time.sleep(0.3)
                 selector_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
@@ -164,7 +164,7 @@ class BiliB(object):
                     # """.format(title=item.get("title"))
                     # self.browser.execute_script(code_js)
                 except Exception as e:
-                    title_element.send_keys("无聊真香: {}".format(time.strftime("%Y%m%d %H:%M:%S")))
+                    title_element.send_keys(title_gen())
                     logger.error("set title failure, err: {}".format(e.args[-1]))
 
                 tags_elements: List[WebElement] = WebDriverWait(self.browser, self.timeout).until(

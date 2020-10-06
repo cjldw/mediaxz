@@ -44,7 +44,7 @@ class LiveStreamDb(Sqlite3Record):
         cursor.execute(sql)
         result = cursor.fetchone()
         cursor.close()
-        return result[0]
+        return result[0] if result is not None else 0
 
     def video_url(self, index: int) -> str:
         cursor = self.database.cursor()
@@ -52,4 +52,4 @@ class LiveStreamDb(Sqlite3Record):
         cursor.execute(sql, (index,), )
         result = cursor.fetchone()
         cursor.close()
-        return result[0]
+        return result[0] if result is not None else 0
