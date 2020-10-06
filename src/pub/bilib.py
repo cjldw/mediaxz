@@ -88,17 +88,19 @@ class BiliB(object):
                 # print(upload_element.get_attribute("name"), upload_element.get_attribute("type"))
                 upload_element.send_keys(str(abs_mp4file.absolute()))
                 time.sleep(10)  # 确保视频上传完成
-                img_covert_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
-                    EC.presence_of_element_located((By.XPATH, "//div[@class='cover-v2-preview']/input[@type='file']")))
-                if not self.gen_pub_image(code):
-                    logger.error("cover image generate failure")
-                    continue
-                cover_file = self.download_dir.joinpath(code + ".cover.jpg")
-                img_covert_element.send_keys(str(cover_file.absolute()))
-                time.sleep(2)  # 确保图片上传完成
-                confirm_button_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, ".cover-chop-modal-v2-btn")))
-                ActionChains(self.browser).move_to_element(confirm_button_element).click().perform()
+
+                # 图片默认处理好了
+                # img_covert_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                #     EC.presence_of_element_located((By.XPATH, "//div[@class='cover-v2-preview']/input[@type='file']")))
+                # if not self.gen_pub_image(code):
+                #     logger.error("cover image generate failure")
+                #     continue
+                # cover_file = self.download_dir.joinpath(code + ".cover.jpg")
+                # img_covert_element.send_keys(str(cover_file.absolute()))
+                # time.sleep(2)  # 确保图片上传完成
+                # confirm_button_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
+                #     EC.presence_of_element_located((By.CSS_SELECTOR, ".cover-chop-modal-v2-btn")))
+                # ActionChains(self.browser).move_to_element(confirm_button_element).click().perform()
 
                 if self.options.get("copy"):  # 转载处理
                     from_element: WebElement = WebDriverWait(self.browser, self.timeout).until(
