@@ -75,7 +75,7 @@ def vpkg(**kwargs):
               help="upstream address")
 @click.option("--source", default=None, help="local video file")
 @click.option("--db", default="./live.db", help="database of live")
-@click.option("--daemon", default=False, type=click.BOOL, help="run forever or not")
+@click.option("--daemon", default=True, type=click.BOOL, help="run forever or not")
 def live(**kwargs):
     stream_live = StreamLive(kwargs)
     stream_live.live(0)

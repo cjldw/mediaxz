@@ -6,6 +6,7 @@
 
 import ffmpeg
 import unittest
+from src.db.live_video_db import LiveStreamDb
 import os
 
 
@@ -22,3 +23,8 @@ class TestLive(unittest.TestCase):
         # cmd = "ffmpeg -re -i {} -codec copy -f flv {}".format(from_url, to_url)
         #
         # os.system(cmd)
+
+    def test_record_db(self):
+        db = LiveStreamDb({"db": "../dist/live.db"})
+        result = db.video_info(1)
+        print(result)

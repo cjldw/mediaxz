@@ -26,7 +26,9 @@ class StreamLive(object):
         if locale_file is not None and len(locale_file) > 0:
             return str(locale_file)
         last_index = self.database.last_playing()
-        return self.database.video_url(last_index)
+        video_info = self.database.video_info(last_index)
+        self.database.record_index(video_info[0])
+        return video_info[1]
 
     def live(self, times: int):
         daemon = self.options.get("daemon")

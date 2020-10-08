@@ -5,6 +5,7 @@
 # desc:
 
 import logging
+from typing import Tuple
 from src.db.sqlite import Sqlite3Record
 from src.models.live_video import LiveVideo
 
@@ -38,18 +39,30 @@ class LiveStreamDb(Sqlite3Record):
         cursor.close()
         return result
 
+    def max_video_id(self) -> int:
+        cursor = self.database.cursor()
+        sql = "select max(id) from videos_stream"
+        cursor.execute(sql)
+        result = cursor.fetchone()
+        cursor.close()
+        return result[0] if result is not None else 0
+
     def last_playing(self) -> int:
         cursor = self.database.cursor()
         sql = "select record_index from videos_stream_index order by id desc limit 1"
         cursor.execute(sql)
         result = cursor.fetchone()
         cursor.close()
-        return result[0] if result is not None else 0
+        last_index = result[0] if result is not None else 0
+        max_video_id = self.max_video_id()
+        if last_index >= max_video_id:
+            return 0
+        return last_index
 
-    def video_url(self, index: int) -> str:
+    def video_info(self, index: int) -> Tuple[id, str]:
         cursor = self.database.cursor()
-        sql = "select url from videos_stream where id >= ? limit 1"
+        sql = "select id, url from videos_stream where id > ? limit 1"
         cursor.execute(sql, (index,), )
         result = cursor.fetchone()
         cursor.close()
-        return result[0] if result is not None else 0
+        return result if result is not None else (0, "")
