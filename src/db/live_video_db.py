@@ -30,7 +30,16 @@ class LiveStreamDb(Sqlite3Record):
         result = cursor.fetchone()
         return result[0] > 0
 
-    def record_index(self, index: int):
+    def delete_record_index(self) -> int:
+        cursor = self.database.cursor()
+        sql = "delete from videos_stream_index"
+        cursor.execute(sql)
+        self.database.commit()
+        affected_rows = cursor.rowcount
+        cursor.close()
+        return affected_rows
+
+    def record_index(self, index: int) -> int:
         cursor = self.database.cursor()
         sql = "insert into videos_stream_index (record_index) values (?)"
         cursor.execute(sql, (index,), )

@@ -27,7 +27,10 @@ class StreamLive(object):
             return str(locale_file)
         last_index = self.database.last_playing()
         video_info = self.database.video_info(last_index)
-        self.database.record_index(video_info[0])
+        affected_rows = self.database.delete_record_index()
+        logger.info("delete videos stream index records affected rows: {}".format(affected_rows))
+        affected_rows = self.database.record_index(video_info[0])
+        logger.info("fetch video info: {} record stream index affected rows: {}".format(video_info, affected_rows))
         return video_info[1]
 
     def live(self, times: int):
