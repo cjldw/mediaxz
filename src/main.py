@@ -26,7 +26,7 @@ def entrance():
 @click.option('--website', type=click.Choice(["weibo", "huaban", "xinpianchang"], case_sensitive=False),
               default="weibo", help="which website to crawl")
 @click.option("--output", default="./output", help="the path of media output ")
-@click.option("--db", default="mediaxz.db", help="database file path")
+@click.option("--db", default="weibo.db", help="database file path")
 @click.option("--count", default=30, help="number of video crawl")
 def download(**kwargs):
     configs.update(kwargs)
