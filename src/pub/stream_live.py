@@ -6,9 +6,8 @@
 
 
 import logging
-import ffmpeg
 import os
-
+from src.tools.notify import Reporting
 from src.db.live_video_db import LiveStreamDb
 
 logger = logging.getLogger(__name__)
@@ -20,6 +19,7 @@ class StreamLive(object):
     def __init__(self, options: dict):
         self.options = options
         self.database = LiveStreamDb(options)
+        self.reporting = Reporting()
 
     def stream(self) -> str:
         locale_file = self.options.get("source", None)
@@ -33,22 +33,27 @@ class StreamLive(object):
         logger.info("fetch video info: {} record stream index affected rows: {}".format(video_info, affected_rows))
         return video_info[1]
 
-    def live(self, times: int):
+    def live(self) -> None:
+        times = 0
         daemon = self.options.get("daemon")
-        input_url = self.stream()
         output_url = self.options.get("url", self.default_stream)
-        logger.info("input url: {}, output url: {}".format(input_url, output_url))
-        if times >= 5:
-            logger.error("failure times max than 5， stop")
-            return None
-        try:
-            cmd = "ffmpeg -re -i \"{}\" -codec copy -f flv \"{}\"".format(input_url, output_url)
-            logger.info("execute command: {}".format(cmd))
-            os.system(cmd)
-            # ffmpeg.input(input_url).output(ffmpeg.input(output_url)).run()
-        except Exception as e:
-            logger.error("publish url: {} to {} failure, {}".format(input_url, output_url, e))
-            if daemon:
-                return self.live(times=times + 1)
-        if daemon:
-            return self.live(0)
+        while True:
+            input_url = self.stream()
+            logger.info("input url: {}, output url: {}".format(input_url, output_url))
+            if times >= 5:
+                self.reporting.sender("发现错误超过5次， 停止")
+                logger.error("failure times max than 5， stop")
+                times = 0
+                continue
+            try:
+                cmd = "ffmpeg -re -i \"{}\" -codec copy -f flv \"{}\"".format(input_url, output_url)
+                logger.info("execute command: {}".format(cmd))
+                os.system(cmd)
+                # ffmpeg.input(input_url).output(ffmpeg.input(output_url)).run()
+            except Exception as e:
+                times += 1
+                logger.error("publish url: {} to {} failure, {}".format(input_url, output_url, e))
+            if not daemon:
+                logger.info("live don't run with daemon, stop")
+                return None
+            logger.info("live url: {} completed, switch to next".format(input_url))

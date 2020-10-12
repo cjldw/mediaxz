@@ -78,7 +78,7 @@ def vpkg(**kwargs):
 @click.option("--daemon", default=True, type=click.BOOL, help="run forever or not")
 def live(**kwargs):
     stream_live = StreamLive(kwargs)
-    stream_live.live(0)
+    stream_live.live()
 
 
 def launch():
