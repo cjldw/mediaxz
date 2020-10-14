@@ -14,8 +14,8 @@ POP_PORT = 995
 POP_URL = "pop.qq.com"
 
 USER = "975753874@qq.com"
-PASSWORD_QQ_SMTP = "asexuudrrqxuebeic"
-PASSWORD_QQ_POP = "tvcfinugrhjbbejia"
+PASSWORD_QQ_SMTP = "sexuudrrqxuebeic"
+PASSWORD_QQ_POP = "tvcfinugrhjbbeji"
 
 MAIL_TO = "2242430415@qq.com"
 MAIL_SENDER = "975753874@qq.com"

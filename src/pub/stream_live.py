@@ -46,7 +46,8 @@ class StreamLive(object):
                 times = 0
                 continue
             try:
-                cmd = "ffmpeg -re -i \"{}\" -codec copy -f flv \"{}\"".format(input_url, output_url)
+                cmd = "ffmpeg -re -i \"{}\" -codec copy -f flv -flvflags no_duration_filesize \"{}\"".format(input_url,
+                                                                                                             output_url)
                 logger.info("execute command: {}".format(cmd))
                 os.system(cmd)
                 # ffmpeg.input(input_url).output(ffmpeg.input(output_url)).run()
