@@ -23,10 +23,9 @@ def entrance():
 
 
 @entrance.command()
-@click.option('--website', type=click.Choice(["weibo", "huaban", "xinpianchang"], case_sensitive=False),
+@click.option('--website', type=click.Choice(["weibo", "huaban", "gaoxiaogif"], case_sensitive=False),
               default="weibo", help="which website to crawl")
 @click.option("--output", default="./output", help="the path of media output ")
-@click.option("--db", default="weibo.db", help="database file path")
 @click.option("--count", default=30, help="number of video crawl")
 def download(**kwargs):
     configs.update(kwargs)
@@ -74,7 +73,7 @@ def vpkg(**kwargs):
                       "=69f49942956030afd257668fee1f5497&schedule=rtmp",
               help="upstream address")
 @click.option("--source", default=None, help="local video file")
-@click.option("--db", default="./live.db", help="database of live")
+@click.option("--db", default="live.db", help="database of live")
 @click.option("--daemon", default=True, type=click.BOOL, help="run forever or not")
 def live(**kwargs):
     stream_live = StreamLive(kwargs)

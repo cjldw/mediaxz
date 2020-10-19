@@ -6,6 +6,7 @@
 
 from src.website.weib import WeiB
 from src.website.huaban import HuaBan
+from src.website.gaoxiaogif import GaoXiaoGif
 
 
 class CrawlFactory(object):
@@ -20,3 +21,5 @@ class CrawlFactory(object):
             return WeiB(self.options)
         if clazz == HuaBan.name:
             return HuaBan(self.options)
+        if clazz == GaoXiaoGif.name:
+            return GaoXiaoGif(self.options)

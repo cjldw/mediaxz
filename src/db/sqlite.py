@@ -16,7 +16,12 @@ class Sqlite3Record(object):
     database: dbapi2 = None
 
     def __init__(self, options: dict):
-        db = options.get("db", "")
-        if not db or len(db) <= 0:
+        dbname = options.get("website", "")
+        if len(dbname) > 0:
+            db = "{}.db".format(dbname)
+            self.database = sqlite3.connect(database=db, timeout=3)
+            return
+        dbname = options.get("db", "")
+        if len(dbname) <= 0:
             raise ValueError("db configuration not setting")
-        self.database = sqlite3.connect(database=db, timeout=3)
+        self.database = sqlite3.connect(database=dbname, timeout=3)

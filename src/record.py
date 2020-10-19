@@ -20,6 +20,7 @@ from src.db.weibo_video_db import WeiBoVideoDB
 from pathlib import Path
 from src.util import pure_url
 from datetime import datetime
+from src.tools.videos import videos_export_json
 
 record_locker = threading.RLock()
 logger = logging.getLogger(__name__)
@@ -95,16 +96,8 @@ class Recoder(object):
         return True
 
     def export_json(self):
-        download_dir = Path(self.__recorder.options.get("output"))
-        if not download_dir.exists():
-            download_dir.mkdir(mode=644, parents=True)
-        abs_file = download_dir.joinpath("videos.json")
-        if abs_file.exists():
-            shutil.move(abs_file, download_dir.joinpath(
-                "videos.json-{}".format(datetime.now().strftime("%Y%m%d%H%M%S"))))
         result = self.__recorder.db.delta_videos(self.load_dump())
-        with open(abs_file, mode="w", encoding="utf-8") as fd:
-            dump(result, fd, indent="  ", ensure_ascii=False)
+        videos_export_json(result, self.__recorder.options.get("output"))
         logger.info("export all video to videos.json")
         self.reset_dump(self.__recorder.db.current_videos_cursor())
 
